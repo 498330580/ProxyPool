@@ -1,0 +1,17 @@
+version: "3"
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    command: redis-server
+    restart: always
+  proxypool:
+    build: .
+    image: "germey/proxypool"
+    container_name: proxypool
+    ports:
+      - "5555:5555"
+    restart: always
+    environment:
+      PROXYPOOL_REDIS_HOST: redis
+      
