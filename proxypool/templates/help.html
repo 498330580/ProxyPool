@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block title %}代理池管理面板 - 帮助{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">API 使用帮助</h1>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">API 基本信息</h5>
+    </div>
+    <div class="card-body">
+        <p>基础地址: <code>http://{你的访问ip}:5555</code></p>
+        
+
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="card-title mb-0">API 接口定义</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>接口</th>
+                        <th>描述</th>
+                        <th>参数</th>
+                        <th>返回</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>/random</code></td>
+                        <td>获取随机代理</td>
+                        <td>可选: <code>key</code></td>
+                        <td>单个代理字符串</td>
+                    </tr>
+                    <tr>
+                        <td><code>/all</code></td>
+                        <td>获取所有代理</td>
+                        <td>可选: <code>key</code></td>
+                        <td>代理列表</td>
+                    </tr>
+                    <tr>
+                        <td><code>/count</code></td>
+                        <td>获取代理总数</td>
+                        <td>可选: <code>key</code></td>
+                        <td>代理数量</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="card-title mb-0">各语言使用示例</h5>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-tabs" id="languageTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="python-tab" data-bs-toggle="tab" data-bs-target="#python" type="button" role="tab">Python</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="javascript-tab" data-bs-toggle="tab" data-bs-target="#javascript" type="button" role="tab">JavaScript</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="php-tab" data-bs-toggle="tab" data-bs-target="#php" type="button" role="tab">PHP</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="java-tab" data-bs-toggle="tab" data-bs-target="#java" type="button" role="tab">Java</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="go-tab" data-bs-toggle="tab" data-bs-target="#go" type="button" role="tab">Go</button>
+            </li>
+        </ul>
+        <div class="tab-content mt-3" id="languageTabsContent">
+            <div class="tab-pane fade show active" id="python" role="tabpanel">
+                <pre><code class="language-python">
+import requests
+
+# 获取随机代理
+def get_proxy():
+    proxy_url = 'http://{{ api_host }}:{{ api_port }}/random'
+    try:
+        response = requests.get(proxy_url)
+        if response.status_code == 200:
+            return response.text
+    except requests.exceptions.ConnectionError:
+        return None
+
+# 使用代理访问目标网站
+def use_proxy(proxy, target_url):
+    proxies = {
+        'http': 'http://' + proxy,
+        'https': 'https://' + proxy,
+    }
+    try:
+        response = requests.get(target_url, proxies=proxies, timeout=10)
+        return response
+    except:
+        return None
+
+# 示例
+if __name__ == '__main__':
+    proxy = get_proxy()
+    if proxy:
+        print('获取到代理:', proxy)
+        response = use_proxy(proxy, 'http://httpbin.org/ip')
+        if response:
+            print('代理可用，返回结果:', response.text)
+        else:
+            print('代理不可用')
+    else:
+        print('未获取到代理')
+                </code></pre>
+            </div>
+            <div class="tab-pane fade" id="javascript" role="tabpanel">
+                <pre><code class="language-javascript">
+// 使用 Node.js 和 axios
+const axios = require('axios');
+
+// 获取随机代理
+async function getProxy() {
+    try {
+        const response = await axios.get('http://{{ api_host }}:{{ api_port }}/random');
+        return response.data;
+    } catch (error) {
+        console.error('获取代理失败:', error);
+        return null;
+    }
+}
+
+// 使用代理访问目标网站
+async function useProxy(proxy, targetUrl) {
+    try {
+        const response = await axios.get(targetUrl, {
+            proxy: {
+                host: proxy.split(':')[0],
+                port: parseInt(proxy.split(':')[1])
+            },
+            timeout: 10000
+        });
+        return response.data;
+    } catch (error) {
+        console.error('使用代理访问失败:', error);
+        return null;
+    }
+}
+
+// 示例
+async function main() {
+    const proxy = await getProxy();
+    if (proxy) {
+        console.log('获取到代理:', proxy);
+        const result = await useProxy(proxy, 'http://httpbin.org/ip');
+        if (result) {
+            console.log('代理可用，返回结果:', result);
+        } else {
+            console.log('代理不可用');
+        }
+    } else {
+        console.log('未获取到代理');
+    }
+}
+
+main();
+                </code></pre>
+            </div>
+            <div class="tab-pane fade" id="php" role="tabpanel">
+                <pre><code class="language-php">
+&lt;?php
+// 获取随机代理
+function getProxy() {
+    $proxyUrl = 'http://{{ api_host }}:{{ api_port }}/random';
+    try {
+        $proxy = file_get_contents($proxyUrl);
+        return $proxy;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+// 使用代理访问目标网站
+function useProxy($proxy, $targetUrl) {
+    $context = stream_context_create([
+        'http' => [
+            'proxy' => 'tcp://' . $proxy,
+            'request_fulluri' => true,
+            'timeout' => 10,
+        ],
+    ]);
+    
+    try {
+        $result = file_get_contents($targetUrl, false, $context);
+        return $result;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+// 示例
+$proxy = getProxy();
+if ($proxy) {
+    echo "获取到代理: " . $proxy . "\n";
+    $result = useProxy($proxy, 'http://httpbin.org/ip');
+    if ($result) {
+        echo "代理可用，返回结果: " . $result . "\n";
+    } else {
+        echo "代理不可用\n";
+    }
+} else {
+    echo "未获取到代理\n";
+}
+?&gt;
+                </code></pre>
+            </div>
+            <div class="tab-pane fade" id="java" role="tabpanel">
+                <pre><code class="language-java">
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+
+public class ProxyPoolExample {
+    
+    // 获取随机代理
+    public static String getProxy() {
+        try {
+            URL url = new URL("http://{{ api_host }}:{{ api_port }}/random");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            
+            int responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                
+                return response.toString();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    // 使用代理访问目标网站
+    public static String useProxy(String proxyStr, String targetUrl) {
+        try {
+            String[] proxyParts = proxyStr.split(":");
+            String proxyHost = proxyParts[0];
+            int proxyPort = Integer.parseInt(proxyParts[1]);
+            
+            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+            
+            URL url = new URL(targetUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection(proxy);
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
+            
+            int responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                
+                return response.toString();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    public static void main(String[] args) {
+        String proxy = getProxy();
+        if (proxy != null) {
+            System.out.println("获取到代理: " + proxy);
+            String result = useProxy(proxy, "http://httpbin.org/ip");
+            if (result != null) {
+                System.out.println("代理可用，返回结果: " + result);
+            } else {
+                System.out.println("代理不可用");
+            }
+        } else {
+            System.out.println("未获取到代理");
+        }
+    }
+}
+                </code></pre>
+            </div>
+            <div class="tab-pane fade" id="go" role="tabpanel">
+                <pre><code class="language-go">
+package main
+
+import (
+    "fmt"
+    "io/ioutil"
+    "net/http"
+    "net/url"
+    "time"
+)
+
+// 获取随机代理
+func getProxy() (string, error) {
+    resp, err := http.Get("http://{{ api_host }}:{{ api_port }}/random")
+    if err != nil {
+        return "", err
+    }
+    defer resp.Body.Close()
+    
+    if resp.StatusCode == 200 {
+        body, err := ioutil.ReadAll(resp.Body)
+        if err != nil {
+            return "", err
+        }
+        return string(body), nil
+    }
+    
+    return "", fmt.Errorf("获取代理失败，状态码: %d", resp.StatusCode)
+}
+
+// 使用代理访问目标网站
+func useProxy(proxyStr, targetURL string) (string, error) {
+    proxyURL, err := url.Parse("http://" + proxyStr)
+    if err != nil {
+        return "", err
+    }
+    
+    client := &http.Client{
+        Transport: &http.Transport{
+            Proxy: http.ProxyURL(proxyURL),
+        },
+        Timeout: 10 * time.Second,
+    }
+    
+    resp, err := client.Get(targetURL)
+    if err != nil {
+        return "", err
+    }
+    defer resp.Body.Close()
+    
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return "", err
+    }
+    
+    return string(body), nil
+}
+
+func main() {
+    proxy, err := getProxy()
+    if err != nil {
+        fmt.Println("未获取到代理:", err)
+        return
+    }
+    
+    fmt.Println("获取到代理:", proxy)
+    
+    result, err := useProxy(proxy, "http://httpbin.org/ip")
+    if err != nil {
+        fmt.Println("代理不可用:", err)
+        return
+    }
+    
+    fmt.Println("代理可用，返回结果:", result)
+}
+                </code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // 激活选项卡
+    var triggerTabList = [].slice.call(document.querySelectorAll('#languageTabs button'))
+    triggerTabList.forEach(function (triggerEl) {
+        var tabTrigger = new bootstrap.Tab(triggerEl)
+        triggerEl.addEventListener('click', function (event) {
+            event.preventDefault()
+            tabTrigger.show()
+        })
+    })
+</script>
+{% endblock %}
+{% endblock %}

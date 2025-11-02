@@ -1,14 +1,33 @@
-from flask import Flask, g, request
+from flask import Flask, g, request, render_template, jsonify
 from proxypool.exceptions import PoolEmptyException
 from proxypool.storages.redis import RedisClient
 from proxypool.setting import API_HOST, API_PORT, API_THREADED, API_KEY, IS_DEV, PROXY_RAND_KEY_DEGRADED
+from proxypool.setting import REDIS_HOST, REDIS_PORT
 import functools
+import datetime
+import os
+import importlib
+import pkgutil
 
 __all__ = ['app']
 
-app = Flask(__name__)
+app = Flask(__name__, 
+           template_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates'),
+           static_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static'))
 if IS_DEV:
     app.debug = True
+
+# 添加模板过滤器
+@app.template_filter('now')
+def filter_now(format_="%Y-%m-%d %H:%M:%S"):
+    return datetime.datetime.now().strftime(format_)
+
+# 添加now函数到全局上下文
+@app.context_processor
+def inject_now():
+    def format_now(format_="%Y-%m-%d %H:%M:%S"):
+        return datetime.datetime.now().strftime(format_)
+    return {'now': format_now}
 
 
 def auth_required(func):
@@ -98,7 +117,60 @@ def get_count():
     """
     conn = get_conn()
     key = request.args.get('key')
-    return str(conn.count(key)) if key else conn.count()
+    return str(conn.count(key)) if key else str(conn.count())
+    
+# 管理面板路由
+@app.route('/admin')
+def admin_dashboard():
+    """
+    管理面板首页
+    :return: 管理面板首页
+    """
+    conn = get_conn()
+    proxies = conn.all()
+    proxies_list = []
+    
+    # 获取最新20条代理
+    for proxy in proxies[:20]:
+        # 获取代理分数
+        proxy_str = str(proxy)
+        score = conn.db.zscore(conn.db.keys('*proxy*')[0], proxy_str) if conn.db.keys('*proxy*') else 0
+        proxies_list.append({
+            'proxy': proxy_str,
+            'score': int(score) if score else 0,
+            'last_checked': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
+    
+    # 获取爬虫数量
+    crawler_count = 0
+    crawler_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawlers', 'public')
+    if os.path.exists(crawler_path):
+        crawler_count = len([name for name in os.listdir(crawler_path) 
+                           if os.path.isfile(os.path.join(crawler_path, name)) 
+                           and name.endswith('.py') 
+                           and name != '__init__.py'])
+    
+    return render_template('dashboard.html', 
+                          active_page='dashboard',
+                          proxy_count=conn.count(),
+                          crawler_count=crawler_count,
+                          status='运行中',
+                          proxies=proxies_list,
+                          redis_host=REDIS_HOST,
+                          redis_port=REDIS_PORT,
+                          api_host=API_HOST,
+                          api_port=API_PORT)
+
+@app.route('/admin/help')
+def admin_help():
+    """
+    管理面板帮助页面
+    :return: 管理面板帮助页面
+    """
+    return render_template('help.html', 
+                          active_page='help',
+                          api_host=API_HOST,
+                          api_port=API_PORT)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}代理池管理面板 - 首页{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">代理池状态</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">代理总数</h5>
+            </div>
+            <div class="card-body">
+                <h2 class="display-4 text-center">{{ proxy_count }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">爬虫数量</h5>
+            </div>
+            <div class="card-body">
+                <h2 class="display-4 text-center">{{ crawler_count }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">系统状态</h5>
+            </div>
+            <div class="card-body">
+                <h2 class="display-4 text-center">{{ status }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="card-title mb-0">代理列表 (最新20条)</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>代理</th>
+                                <th>最后检查时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for proxy in proxies %}
+                            <tr>
+                                <td>{{ proxy.proxy }}</td>
+                                <td>{{ proxy.last_checked }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">系统信息</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        API 端口
+                        <span class="badge bg-primary rounded-pill">{{ api_port }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 每30秒自动刷新页面
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
+</script>
+{% endblock %}

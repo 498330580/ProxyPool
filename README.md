@@ -1,34 +1,44 @@
-# ProxyPool
+# 🌐 ProxyPool
 
 ![build](https://github.com/Python3WebSpider/ProxyPool/workflows/build/badge.svg)
 ![deploy](https://github.com/Python3WebSpider/ProxyPool/workflows/deploy/badge.svg)
 ![](https://img.shields.io/badge/python-3.6%2B-brightgreen)
 ![Docker Pulls](https://img.shields.io/docker/pulls/germey/proxypool)
 
-简易高效的代理池，提供如下功能：
+✨ 简易高效的代理池，提供如下功能：
 
-- 定时抓取免费代理网站，简易可扩展。
-- 使用 Redis 对代理进行存储并对代理可用性进行排序。
-- 定时测试和筛选，剔除不可用代理，留下可用代理。
-- 提供代理 API，随机取用测试通过的可用代理。
+- 🔄 定时抓取免费代理网站，简易可扩展。
+- 📦 使用 Redis 对代理进行存储并对代理可用性进行排序。
+- 🔍 定时测试和筛选，剔除不可用代理，留下可用代理。
+- 🚀 提供代理 API，随机取用测试通过的可用代理。
 
-代理池原理解析可见「[如何搭建一个高效的代理池](https://cuiqingcai.com/7048.html)」，建议使用之前阅读。
+📚 代理池原理解析可见「[如何搭建一个高效的代理池](https://cuiqingcai.com/7048.html)」，建议使用之前阅读。
 
-## 使用前注意
+## 📝 更新日志
 
-本代理池是基于市面上各种公开代理源搭建的，所以可用性并不高，很可能上百上千个代理中才能找到一两个可用代理，不适合直接用于爬虫爬取任务。
+### 📅 2025-11-02 更新
+- 🐛 修复了管理面板中 `now` 过滤器未定义的问题
+- 🐛 修复了时区参数类型错误问题
+- 🗑️ 移除了管理面板中的代理分数栏目显示
+- 🗑️ 移除了管理面板中的 API 主机显示
+- 🗑️ 移除了管理面板中的 Redis 主机和 Redis 端口显示
+- 🔄 更新了帮助页面中的基础地址显示格式
+
+## ⚠️ 使用前注意
+
+⚠️ 本代理池是基于市面上各种公开代理源搭建的，所以可用性并不高，很可能上百上千个代理中才能找到一两个可用代理，不适合直接用于爬虫爬取任务。
 
 如果您的目的是为了尽快使用代理完成爬取任务，建议您对接一些付费代理或者直接使用已有代理资源；如果您的目的是为了学习如何搭建一个代理池，您可以参考本项目继续完成后续步骤。
 
-付费代理推荐：
+💰 付费代理推荐：
 
-- [ADSL 拨号代理](https://platform.acedata.cloud/documents/a82a528a-8e32-4c4c-a9d0-a21be7c9ef8c)：海量拨号（中国境内）高质量代理
-- [海外/全球代理](https://platform.acedata.cloud/documents/50f1437a-1857-43c5-85cf-5800ae1b31e4)：中国境外高质量代理
-- [蜂窝 4G/5G 代理](https://platform.acedata.cloud/documents/1cc59b19-1550-4169-a59d-ad6faf7f7517)：极高质量（中国境内）防风控代理
+- 📞 [ADSL 拨号代理](https://platform.acedata.cloud/documents/a82a528a-8e32-4c4c-a9d0-a21be7c9ef8c)：海量拨号（中国境内）高质量代理
+- 🌍 [海外/全球代理](https://platform.acedata.cloud/documents/50f1437a-1857-43c5-85cf-5800ae1b31e4)：中国境外高质量代理
+- 📱 [蜂窝 4G/5G 代理](https://platform.acedata.cloud/documents/1cc59b19-1550-4169-a59d-ad6faf7f7517)：极高质量（中国境内）防风控代理
 
-## 使用准备
+## 🔧 使用准备
 
-首先当然是克隆代码并进入 ProxyPool 文件夹：
+🔽 首先当然是克隆代码并进入 ProxyPool 文件夹：
 
 ```
 git clone https://github.com/Python3WebSpider/ProxyPool.git
@@ -37,29 +47,29 @@ cd ProxyPool
 
 然后选用下面 Docker 和常规方式任意一个执行即可。
 
-## 使用要求
+## 📋 使用要求
 
 可以通过两种方式来运行代理池，一种方式是使用 Docker（推荐），另一种方式是常规方式运行，要求如下：
 
-### Docker
+### 🐳 Docker
 
 如果使用 Docker，则需要安装如下环境：
 
-- Docker
-- Docker-Compose
+- 🐳 Docker
+- 🔄 Docker-Compose
 
 安装方法自行搜索即可。
 
-官方 Docker Hub 镜像：[germey/proxypool](https://hub.docker.com/r/germey/proxypool)
+🔗 官方 Docker Hub 镜像：[germey/proxypool](https://hub.docker.com/r/germey/proxypool)
 
-### 常规方式
+### 💻 常规方式
 
 常规方式要求有 Python 环境、Redis 环境，具体要求如下：
 
-- Python>=3.6
-- Redis
+- 🐍 Python>=3.6
+- 📦 Redis
 
-## Docker 运行
+## 🐳 Docker 运行
 
 如果安装好了 Docker 和 Docker-Compose，只需要一条命令即可运行。
 
@@ -93,11 +103,11 @@ proxypool    | 2020-02-19 17:09:46,596 INFO success: tester entered RUNNING stat
 + RUN pip install -r requirements.txt -i https://pypi.douban.com/simple
 ```
 
-## 常规方式运行
+## 💻 常规方式运行
 
 如果不使用 Docker 运行，配置好 Python、Redis 环境之后也可运行，步骤如下。
 
-### 安装和配置 Redis
+### 🔧 安装和配置 Redis
 
 本地安装 Redis、Docker 启动 Redis、远程 Redis 都是可以的，只要能正常连接使用即可。
 
@@ -125,7 +135,7 @@ export PROXYPOOL_REDIS_CONNECTION_STRING='redis://localhost'
 
 以上两种设置任选其一即可。
 
-### 安装依赖包
+### 📦 安装依赖包
 
 这里强烈推荐使用 [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)
 或 [virtualenv](https://virtualenv.pypa.io/en/latest/user_guide.html) 创建虚拟环境，Python 版本不低于 3.6。
@@ -136,14 +146,14 @@ export PROXYPOOL_REDIS_CONNECTION_STRING='redis://localhost'
 pip3 install -r requirements.txt
 ```
 
-### 运行代理池
+### 🚀 运行代理池
 
 两种方式运行代理池，一种是 Tester、Getter、Server 全部运行，另一种是按需分别运行。
 
 一般来说可以选择全部运行，命令如下：
 
 ```shell script
-python3 run.py
+python run.py
 ```
 
 运行之后会启动 Tester、Getter、Server，这时访问 [http://localhost:5555/random](http://localhost:5555/random) 即可获取一个随机可用代理。
@@ -151,14 +161,14 @@ python3 run.py
 或者如果你弄清楚了代理池的架构，可以按需分别运行，命令如下：
 
 ```shell script
-python3 run.py --processor getter
-python3 run.py --processor tester
-python3 run.py --processor server
+python run.py --processor getter
+python run.py --processor tester
+python run.py --processor server
 ```
 
 这里 processor 可以指定运行 Tester、Getter 还是 Server。
 
-## 使用
+## 🔍 使用
 
 成功运行之后可以通过 [http://localhost:5555/random](http://localhost:5555/random) 获取一个随机可用代理。
 
@@ -222,17 +232,17 @@ get random proxy 116.196.115.209:8080
 
 可以看到成功获取了代理，并请求 httpbin.org 验证了代理的可用性。
 
-## API 接口
+## 🔌 API 接口
 
 代理池提供基于 HTTP 的简易接口，默认监听 `API_HOST=0.0.0.0`、`API_PORT=5555`。
 
-- 基础地址
-  - `http://<API_HOST>:<API_PORT>/`
+- 📍 基础地址
+  - `http://{你的访问ip}:5555`
 
-- 公共查询参数
+- 🔑 公共查询参数
   - `key`：可选，指定 Redis 子池键名（如：`proxies:weibo`）；未设置时使用默认池。
 
-- 接口列表
+- 📋 接口列表
   - `GET /`：健康检查/欢迎页
     - 返回：`text/html`，示例：`<h2>Welcome to Proxy Pool System</h2>`
   - `GET /random`：获取一个随机可用代理
@@ -246,7 +256,7 @@ get random proxy 116.196.115.209:8080
     - 参数：`key`（可选）
     - 返回：`text/plain`，示例：`123`
 
-- 示例
+- 📝 示例
   - 获取随机代理：
     - `curl http://localhost:5555/random`
   - 指定子池获取随机代理：
@@ -257,50 +267,50 @@ get random proxy 116.196.115.209:8080
     - `curl http://localhost:5555/count`
 
 
-### 开关
+### ⚙️ 开关
 
-- ENABLE_TESTER：允许 Tester 启动，默认 true
-- ENABLE_GETTER：允许 Getter 启动，默认 true
-- ENABLE_SERVER：运行 Server 启动，默认 true
+- 🔄 ENABLE_TESTER：允许 Tester 启动，默认 true
+- 🔄 ENABLE_GETTER：允许 Getter 启动，默认 true
+- 🔄 ENABLE_SERVER：运行 Server 启动，默认 true
 
-### 环境
+### 🌐 环境
 
-- APP_ENV：运行环境，可以设置 dev、test、prod，即开发、测试、生产环境，默认 dev
-- APP_DEBUG：调试模式，可以设置 true 或 false，默认 true
-- APP_PROD_METHOD: 正式环境启动应用方式，默认是`gevent`，
+- 🏠 APP_ENV：运行环境，可以设置 dev、test、prod，即开发、测试、生产环境，默认 dev
+- 🐞 APP_DEBUG：调试模式，可以设置 true 或 false，默认 true
+- 🚀 APP_PROD_METHOD: 正式环境启动应用方式，默认是`gevent`，
   可选：`tornado`，`meinheld`（分别需要安装 tornado 或 meinheld 模块）
 
-### Redis 连接
+### 📦 Redis 连接
 
-- PROXYPOOL_REDIS_HOST / REDIS_HOST：Redis 的 Host，其中 PROXYPOOL_REDIS_HOST 会覆盖 REDIS_HOST 的值。
-- PROXYPOOL_REDIS_PORT / REDIS_PORT：Redis 的端口，其中 PROXYPOOL_REDIS_PORT 会覆盖 REDIS_PORT 的值。
-- PROXYPOOL_REDIS_PASSWORD / REDIS_PASSWORD：Redis 的密码，其中 PROXYPOOL_REDIS_PASSWORD 会覆盖 REDIS_PASSWORD 的值。
-- PROXYPOOL_REDIS_DB / REDIS_DB：Redis 的数据库索引，如 0、1，其中 PROXYPOOL_REDIS_DB 会覆盖 REDIS_DB 的值。
-- PROXYPOOL_REDIS_CONNECTION_STRING / REDIS_CONNECTION_STRING：Redis 连接字符串，其中 PROXYPOOL_REDIS_CONNECTION_STRING 会覆盖 REDIS_CONNECTION_STRING 的值。
-- PROXYPOOL_REDIS_KEY / REDIS_KEY：Redis 储存代理使用字典的名称，其中 PROXYPOOL_REDIS_KEY 会覆盖 REDIS_KEY 的值。
+- 🖥️ PROXYPOOL_REDIS_HOST / REDIS_HOST：Redis 的 Host，其中 PROXYPOOL_REDIS_HOST 会覆盖 REDIS_HOST 的值。
+- 🔌 PROXYPOOL_REDIS_PORT / REDIS_PORT：Redis 的端口，其中 PROXYPOOL_REDIS_PORT 会覆盖 REDIS_PORT 的值。
+- 🔑 PROXYPOOL_REDIS_PASSWORD / REDIS_PASSWORD：Redis 的密码，其中 PROXYPOOL_REDIS_PASSWORD 会覆盖 REDIS_PASSWORD 的值。
+- 🔢 PROXYPOOL_REDIS_DB / REDIS_DB：Redis 的数据库索引，如 0、1，其中 PROXYPOOL_REDIS_DB 会覆盖 REDIS_DB 的值。
+- 🔗 PROXYPOOL_REDIS_CONNECTION_STRING / REDIS_CONNECTION_STRING：Redis 连接字符串，其中 PROXYPOOL_REDIS_CONNECTION_STRING 会覆盖 REDIS_CONNECTION_STRING 的值。
+- 🏷️ PROXYPOOL_REDIS_KEY / REDIS_KEY：Redis 储存代理使用字典的名称，其中 PROXYPOOL_REDIS_KEY 会覆盖 REDIS_KEY 的值。
 
-### 处理器
+### ⚙️ 处理器
 
-- CYCLE_TESTER：Tester 运行周期，即间隔多久运行一次测试，默认 20 秒
-- CYCLE_GETTER：Getter 运行周期，即间隔多久运行一次代理获取，默认 100 秒
-- TEST_URL：测试 URL，默认百度
-- TEST_TIMEOUT：测试超时时间，默认 10 秒
-- TEST_BATCH：批量测试数量，默认 20 个代理
-- TEST_VALID_STATUS：测试有效的状态码
-- API_HOST：代理 Server 运行 Host，默认 0.0.0.0
-- API_PORT：代理 Server 运行端口，默认 5555
-- API_THREADED：代理 Server 是否使用多线程，默认 true
+- ⏱️ CYCLE_TESTER：Tester 运行周期，即间隔多久运行一次测试，默认 20 秒
+- ⏱️ CYCLE_GETTER：Getter 运行周期，即间隔多久运行一次代理获取，默认 100 秒
+- 🔗 TEST_URL：测试 URL，默认百度
+- ⏱️ TEST_TIMEOUT：测试超时时间，默认 10 秒
+- 🔢 TEST_BATCH：批量测试数量，默认 20 个代理
+- 🔢 TEST_VALID_STATUS：测试有效的状态码
+- 🖥️ API_HOST：代理 Server 运行 Host，默认 0.0.0.0
+- 🔌 API_PORT：代理 Server 运行端口，默认 5555
+- 🧵 API_THREADED：代理 Server 是否使用多线程，默认 true
 
-### 日志
+### 📝 日志
 
-- LOG_DIR：日志相对路径
-- LOG_RUNTIME_FILE：运行日志文件名称
-- LOG_ERROR_FILE：错误日志文件名称
-- LOG_ROTATION: 日志记录周转周期或大小，默认 500MB，见 [loguru - rotation](https://github.com/Delgan/loguru#easier-file-logging-with-rotation--retention--compression)
-- LOG_RETENTION: 日志保留日期，默认 7 天，见 [loguru - retention](https://github.com/Delgan/loguru#easier-file-logging-with-rotation--retention--compression)
-- ENABLE_LOG_FILE：是否输出 log 文件，默认 true，如果设置为 false，那么 ENABLE_LOG_RUNTIME_FILE 和 ENABLE_LOG_ERROR_FILE 都不会生效
-- ENABLE_LOG_RUNTIME_FILE：是否输出 runtime log 文件，默认 true
-- ENABLE_LOG_ERROR_FILE：是否输出 error log 文件，默认 true
+- 📁 LOG_DIR：日志相对路径
+- 📄 LOG_RUNTIME_FILE：运行日志文件名称
+- 📄 LOG_ERROR_FILE：错误日志文件名称
+- 🔄 LOG_ROTATION: 日志记录周转周期或大小，默认 500MB，见 [loguru - rotation](https://github.com/Delgan/loguru#easier-file-logging-with-rotation--retention--compression)
+- 📅 LOG_RETENTION: 日志保留日期，默认 7 天，见 [loguru - retention](https://github.com/Delgan/loguru#easier-file-logging-with-rotation--retention--compression)
+- ✅ ENABLE_LOG_FILE：是否输出 log 文件，默认 true，如果设置为 false，那么 ENABLE_LOG_RUNTIME_FILE 和 ENABLE_LOG_ERROR_FILE 都不会生效
+- ✅ ENABLE_LOG_RUNTIME_FILE：是否输出 runtime log 文件，默认 true
+- ✅ ENABLE_LOG_ERROR_FILE：是否输出 error log 文件，默认 true
 
 以上内容均可使用环境变量配置，即在运行前设置对应环境变量值即可，如更改测试地址和 Redis 键名：
 
@@ -336,7 +346,7 @@ services:
       REDIS_KEY: proxies:weibo
 ```
 
-## 扩展代理爬虫
+## 🔧 扩展代理爬虫
 
 代理的爬虫均放置在 proxypool/crawlers 文件夹下，目前对接了有限几个代理的爬虫。
 
@@ -380,50 +390,6 @@ class Daili66Crawler(BaseCrawler):
 
 欢迎大家多多发 Pull Request 贡献 Crawler，使其代理源更丰富强大起来。
 
-
-## 本地环境变更与项目结构
-
-为满足本地使用需求，可以在项目根目录使用 `.env` 管理环境变量，无需手动在系统中设置。
-
-当前项目结构（重要目录与文件）：
-
-```text
-├── Dockerfile
-├── README.md
-├── docker-compose.yml
-├── examples/
-├── kubernetes/
-├── proxypool/
-├── requirements.txt
-├── run.py
-├── .env
-└── supervisord.conf
-```
-
-以上结构为本地运行参考，不包含隐藏目录（例如 `.venv` 等）。
-
-### 本地环境变量配置（.env）
-
-本项目使用 `environs` 读取环境变量，优先从项目根目录的 `.env` 文件加载。你已创建的 `.env` 示例：
-
-```dotenv
-PROXYPOOL_REDIS_HOST=192.168.200.6
-PROXYPOOL_REDIS_PORT=6379
-```
-
-如需指定密码或数据库索引，可追加：
-
-```dotenv
-PROXYPOOL_REDIS_PASSWORD=
-PROXYPOOL_REDIS_DB=0
-```
-
-也可以使用连接串（两者任选其一）：
-
-```dotenv
-PROXYPOOL_REDIS_CONNECTION_STRING=redis://192.168.200.6:6379/0
-```
-
-## LICENSE
+## 📄 LICENSE
 
 MIT
