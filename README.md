@@ -1,9 +1,17 @@
 # 🌐 ProxyPool
 
-![build](https://github.com/Python3WebSpider/ProxyPool/workflows/build/badge.svg)
+
 ![deploy](https://github.com/Python3WebSpider/ProxyPool/workflows/deploy/badge.svg)
-![](https://img.shields.io/badge/python-3.6%2B-brightgreen)
+![python3](https://img.shields.io/badge/python-3.10%2B-brightgreen)
 ![Docker Pulls](https://img.shields.io/docker/pulls/germey/proxypool)
+
+## 📊 系统展示
+
+### 管理页面首页
+![管理页面首页](doc/img/管理页面-首页.jpeg)
+
+### 帮助页面
+![帮助页面](doc/img/管理页面-帮助.jpeg)
 
 ✨ 简易高效的代理池，提供如下功能：
 
