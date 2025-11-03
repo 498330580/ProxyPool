@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}插件管理{% endblock %}
+
+{% block content %}
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">插件管理</h1>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>插件名称</th>
+                    <th>来源</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plugin in plugins %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ plugin.name }}</td>
+                    <td>{{ plugin.type }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+{% endblock %}

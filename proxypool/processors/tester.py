@@ -49,12 +49,14 @@ class Tester(object):
                 if TEST_ANONYMOUS:
                     url = 'https://httpbin.org/ip'
                     async with session.get(url, timeout=TEST_TIMEOUT) as response:
-                        resp_json = await response.json()
-                        origin_ip = resp_json['origin']
+                        if response.status == 200 and 'application/json' in response.headers.get('content-type', ''):
+                            resp_json = await response.json()
+                            origin_ip = resp_json.get('origin')
                         # logger.debug(f'origin ip is {origin_ip}')
                     async with session.get(url, proxy=f'http://{proxy.string()}', timeout=TEST_TIMEOUT) as response:
-                        resp_json = await response.json()
-                        anonymous_ip = resp_json['origin']
+                        if response.status == 200 and 'application/json' in response.headers.get('content-type', ''):
+                            resp_json = await response.json()
+                            anonymous_ip = resp_json.get('origin')
                         logger.debug(f'anonymous ip is {anonymous_ip}')
                     assert origin_ip != anonymous_ip
                     assert proxy.host == anonymous_ip

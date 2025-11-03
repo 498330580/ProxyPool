@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}代理池系统{% endblock %}
+
+{% block navbar %}
+{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background: #121212;
+        color: #e0e0e0;
+    }
+    .card {
+        background: #1e1e1e;
+        border: 1px solid #333;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+    .display-4 {
+        color: #4a90e2;
+    }
+    .lead {
+        color: #b0b0b0;
+    }
+</style>
+
+<div class="container text-center mt-5">
+    <div class="jumbotron bg-dark text-white p-5 rounded">
+        <h1 class="display-4">欢迎来到代理池系统</h1>
+        <p class="lead">一个高效、可靠的代理IP池</p>
+        <hr class="my-4 bg-secondary">
+        <div class="card text-white bg-primary mb-3 d-inline-block">
+            <div class="card-header">当前可用代理IP数量</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ count }}</h5>
+            </div>
+        </div>
+        <p class="mt-4">
+            <a class="btn btn-primary btn-lg" href="/admin" role="button">进入管理面板</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

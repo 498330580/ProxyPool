@@ -66,7 +66,8 @@ def index():
     get home page, you can define your own templates
     :return:
     """
-    return '<h2>Welcome to Proxy Pool System</h2>'
+    conn = get_conn()
+    return render_template('index.html', count=conn.count())
 
 
 @app.route('/random')
@@ -171,6 +172,21 @@ def admin_help():
                           active_page='help',
                           api_host=API_HOST,
                           api_port=API_PORT)
+
+@app.route('/admin/plugins')
+def admin_plugins():
+    """
+    管理面板插件页面
+    :return: 管理面板插件页面
+    """
+    conn = get_conn()
+    import json
+    crawlers_info = conn.db.smembers('crawlers')
+    plugins = [json.loads(info) for info in crawlers_info]
+    return render_template('plugins.html', 
+                          active_page='plugins',
+                          plugins=plugins)
+
 
 
 if __name__ == '__main__':
