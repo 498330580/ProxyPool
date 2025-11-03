@@ -1,7 +1,7 @@
 # 🌐 ProxyPool
 
 
-![Deploy to GitHub Pages](.github/workflows/badge.svg)
+![Deploy to GitHub Pages](https://raw.githubusercontent.com/498330580/ProxyPool/refs/heads/master/.github/workflows/badge.svg)
 ![python3](https://img.shields.io/badge/python-3.10%2B-brightgreen)
 ![Docker Pulls](https://img.shields.io/docker/pulls/germey/proxypool)
 
