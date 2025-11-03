@@ -133,7 +133,7 @@ proxypool    | 2020-02-19 17:09:46,596 INFO success: tester entered RUNNING stat
 
 设置 host、port、password，如果 password 为空可以设置为空字符串，示例如下：
 
-```shell script
+```shell
 export PROXYPOOL_REDIS_HOST='localhost'
 export PROXYPOOL_REDIS_PORT=6379
 export PROXYPOOL_REDIS_PASSWORD=''
@@ -142,7 +142,7 @@ export PROXYPOOL_REDIS_DB=0
 
 或者只设置连接字符串：
 
-```shell script
+```shell
 export PROXYPOOL_REDIS_CONNECTION_STRING='redis://localhost'
 ```
 
@@ -158,7 +158,7 @@ export PROXYPOOL_REDIS_CONNECTION_STRING='redis://localhost'
 
 然后 pip 安装依赖即可：
 
-```shell script
+```shell
 pip3 install -r requirements.txt
 ```
 
@@ -168,7 +168,7 @@ pip3 install -r requirements.txt
 
 一般来说可以选择全部运行，命令如下：
 
-```shell script
+```shell
 python run.py
 ```
 
@@ -176,7 +176,7 @@ python run.py
 
 或者如果你弄清楚了代理池的架构，可以按需分别运行，命令如下：
 
-```shell script
+```shell
 python run.py --processor getter
 python run.py --processor tester
 python run.py --processor server
@@ -330,7 +330,7 @@ get random proxy 116.196.115.209:8080
 
 以上内容均可使用环境变量配置，即在运行前设置对应环境变量值即可，如更改测试地址和 Redis 键名：
 
-```shell script
+```shell
 export TEST_URL=http://weibo.cn
 export REDIS_KEY=proxies:weibo
 ```
