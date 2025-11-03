@@ -81,6 +81,10 @@ cd ProxyPool
 - 🐍 Python>=3.6
 - 📦 Redis
 
+### ⚙️ GitHub Actions
+
+本项目使用 [GitHub Actions](https://github.com/features/actions) 进行持续集成和部署。工作流配置文件位于 `.github/workflows` 目录下。
+
 ## 🐳 Docker 运行
 
 如果安装好了 Docker 和 Docker-Compose，只需要一条命令即可运行。
