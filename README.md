@@ -1,7 +1,7 @@
 # 🌐 ProxyPool
 
 
-![deploy](https://github.com/Python3WebSpider/ProxyPool/workflows/deploy/badge.svg)
+![Deploy to GitHub Pages](.github/workflows/badge.svg)
 ![python3](https://img.shields.io/badge/python-3.10%2B-brightgreen)
 ![Docker Pulls](https://img.shields.io/docker/pulls/germey/proxypool)
 
@@ -53,7 +53,7 @@
 🔽 首先当然是克隆代码并进入 ProxyPool 文件夹：
 
 ```
-git clone https://github.com/Python3WebSpider/ProxyPool.git
+git clone https://github.com/498330580/ProxyPool.git
 cd ProxyPool
 ```
 
@@ -78,7 +78,7 @@ cd ProxyPool
 
 常规方式要求有 Python 环境、Redis 环境，具体要求如下：
 
-- 🐍 Python>=3.6
+- 🐍 Python>=3.10
 - 📦 Redis
 
 ### ⚙️ GitHub Actions
