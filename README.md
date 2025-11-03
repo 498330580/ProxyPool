@@ -89,7 +89,7 @@ cd ProxyPool
 
 如果安装好了 Docker 和 Docker-Compose，只需要一条命令即可运行。
 
-```shell script
+```shell
 docker-compose up
 ```
 
