@@ -11,6 +11,9 @@ services:
     container_name: proxypool
     ports:
       - "5555:5555"
+    volumes:
+      - ./proxypool/crawlers/private:/app/proxypool/crawlers/private
+      - ./logs:/app/logs
     restart: always
     environment:
       PROXYPOOL_REDIS_HOST: redis

@@ -311,7 +311,7 @@ get random proxy 116.196.115.209:8080
 
 ### 📝 日志
 
-- 📁 LOG_DIR：日志相对路径
+- 📁 LOG_DIR：日志相对路径，默认 logs，默认 logs
 - 📄 LOG_RUNTIME_FILE：运行日志文件名称
 - 📄 LOG_ERROR_FILE：错误日志文件名称
 - 🔄 LOG_ROTATION: 日志记录周转周期或大小，默认 500MB，见 [loguru - rotation](https://github.com/Delgan/loguru#easier-file-logging-with-rotation--retention--compression)
@@ -338,8 +338,6 @@ services:
     image: redis:alpine
     container_name: redis
     command: redis-server
-    ports:
-      - "6379:6379"
     restart: always
   proxypool:
     build: .
@@ -347,11 +345,12 @@ services:
     container_name: proxypool
     ports:
       - "5555:5555"
+    volumes:
+      - ./proxypool/crawlers/private:/app/proxypool/crawlers/private
+      - ./logs:/app/logs
     restart: always
     environment:
-      REDIS_HOST: redis
-      TEST_URL: http://weibo.cn
-      REDIS_KEY: proxies:weibo
+      PROXYPOOL_REDIS_HOST: redis
 ```
 
 ## 🔧 扩展代理爬虫
