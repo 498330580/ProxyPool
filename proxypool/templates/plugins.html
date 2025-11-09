@@ -91,7 +91,7 @@
 
 <!-- 创建插件模态框 -->
 <div class="modal fade" id="createPluginModal" tabindex="-1" aria-labelledby="createPluginLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title" id="createPluginLabel">
@@ -102,27 +102,54 @@
             <div class="modal-body">
                 <form id="createPluginForm">
                     <div class="mb-3">
-                        <label for="pluginName" class="form-label">插件名称 <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="pluginName" placeholder="例如：myproxy（不要包含特殊字符）" required>
-                        <small class="form-text text-muted">模块名称，将作为文件名（自动添加.py）</small>
+                        <label for="pluginName" class="form-label">插件文件名 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="pluginName" placeholder="例如：mycrawler（不需要.py后缀）" required>
+                            <span class="input-group-text">.py</span>
+                        </div>
+                        <small class="form-text text-muted">模块名称，只能包含字母、数字和下划线</small>
                     </div>
+                    
                     <div class="mb-3">
-                        <label for="pluginDescription" class="form-label">描述 <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="pluginDescription" placeholder="例如：My proxy crawler, https://example.com" required>
-                        <small class="form-text text-muted">插件描述（会作为Docstring）</small>
+                        <label for="pluginCode" class="form-label">爬虫代码 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="pluginCode" rows="20" placeholder="请写入爬虫类的完整代码..." required></textarea>
+                        <small class="form-text text-muted d-block mt-2">
+                            <strong>代码模板示例：</strong>
+                        </small>
+                        <pre class="bg-light p-2 mt-2 small"><code>from pyquery import PyQuery as pq
+from proxypool.schemas.proxy import Proxy
+from proxypool.crawlers.base import BaseCrawler
+
+BASE_URL = 'http://example.com/{page}.html'
+MAX_PAGE = 3
+
+class MycrawlerCrawler(BaseCrawler):
+    """
+    mycrawler crawler, http://example.com
+    """
+    urls = [BASE_URL.format(page=page) for page in range(1, MAX_PAGE + 1)]
+
+    def parse(self, html):
+        """
+        parse html file to get proxies
+        :return:
+        """
+        # 在这里实现解析逻辑
+        doc = pq(html)
+        for item in doc('.proxy-item').items():
+            host = item.find('.ip').text()
+            port = int(item.find('.port').text())
+            yield Proxy(host=host, port=port)</code></pre>
                     </div>
-                    <div class="mb-3">
-                        <label for="pluginUrl" class="form-label">API URL <span class="text-danger">*</span></label>
-                        <input type="url" class="form-control" id="pluginUrl" placeholder="https://example.com/api/proxies" required>
-                        <small class="form-text text-muted">爬虫需要访问a的 API 地址</small>
-                    </div>
-                    <div class="mb-3">
-                        <label for="pluginResponse" class="form-label">响应示例</label>
-                        <textarea class="form-control" id="pluginResponse" rows="4" placeholder='{"data": [{"ip": "127.0.0.1", "port": 8080}]}'></textarea>
-                        <small class="form-text text-muted">API 响应示例（JSON 格式）</small>
-                    </div>
+                    
                     <div class="alert alert-info small">
-                        <strong>提示：</strong>插件将会被保存到 <code>proxypool/crawlers/private/</code> 文件夹中。
+                        <strong>提示：</strong>
+                        <ul class="mb-0">
+                            <li>核心是定义一个继承 <code>BaseCrawler</code> 的类</li>
+                            <li>严格按照 README.md 的规范编写（包含类名、urls、parse方法的定义）</li>
+                            <li>类名待应跟文件名匹配（文件名: mycrawler → 类名: MycrawlerCrawler）</li>
+                            <li>需要使用適當的解析庫：pyquery、json、re 等</li>
+                        </ul>
                     </div>
                 </form>
             </div>
@@ -149,13 +176,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const pluginName = document.getElementById('pluginName').value.trim();
-        const pluginDescription = document.getElementById('pluginDescription').value.trim();
-        const pluginUrl = document.getElementById('pluginUrl').value.trim();
-        const pluginResponse = document.getElementById('pluginResponse').value.trim();
+        const pluginCode = document.getElementById('pluginCode').value.trim();
         
         // 验证插件名称
         if (!/^[a-zA-Z0-9_]+$/.test(pluginName)) {
             notifyUtils.error('插件名称只能包含字母、数字和下划线');
+            return;
+        }
+        
+        // 验证插件代码是否包含必要的结构
+        if (!pluginCode.includes('BaseCrawler') || !pluginCode.includes('def parse')) {
+            notifyUtils.error('插件代码必须继承BaseCrawler且包含parse方法');
             return;
         }
         
@@ -171,9 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     name: pluginName,
-                    description: pluginDescription,
-                    url: pluginUrl,
-                    response_example: pluginResponse
+                    code: pluginCode
                 })
             });
             

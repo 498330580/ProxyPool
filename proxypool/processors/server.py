@@ -359,17 +359,25 @@ def create_plugin():
             return jsonify({'success': False, 'message': '请提供插件信息'}), 400
         
         plugin_name = data.get('name', '').strip()
-        plugin_description = data.get('description', '').strip()
-        plugin_url = data.get('url', '').strip()
-        response_example = data.get('response_example', '').strip()
+        plugin_code = data.get('code', '').strip()
         
         # 验证输入
-        if not plugin_name or not plugin_description or not plugin_url:
+        if not plugin_name or not plugin_code:
             return jsonify({'success': False, 'message': '缺少必要参数'}), 400
         
         # 验证插件名称
         if not plugin_name.replace('_', '').isalnum():
             return jsonify({'success': False, 'message': '插件名称只能包含字母、数字和下划线'}), 400
+        
+        # 验证代码结构
+        if 'BaseCrawler' not in plugin_code:
+            return jsonify({'success': False, 'message': '插件代码不符合规范：必须继承BaseCrawler'}), 400
+        
+        if 'def parse' not in plugin_code:
+            return jsonify({'success': False, 'message': '插件代码不符合规范：必须实现parse方法'}), 400
+        
+        if 'yield Proxy' not in plugin_code:
+            return jsonify({'success': False, 'message': '插件代码不符合规范：必须使用yield Proxy返回代理'}), 400
         
         # 检查插件是否已存在
         private_crawler_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawlers', 'private')
@@ -380,55 +388,6 @@ def create_plugin():
         
         # 确保 private 文件夹存在
         os.makedirs(private_crawler_path, exist_ok=True)
-        
-        # 生成插件类名（将下划线转成驻峰命名）
-        class_name = ''.join([word.capitalize() for word in plugin_name.split('_')]) + 'Crawler'
-        
-        # 预义体示例
-        example_response = response_example if response_example else '{"data": [{"ip": "127.0.0.1", "port": 8080}]}'
-        
-        # 生成插件代码——基于真实的爬虫模板
-        plugin_code = '''import time
-import json
-from retrying import RetryError
-from loguru import logger
-from proxypool.schemas.proxy import Proxy
-from proxypool.crawlers.base import BaseCrawler
-
-BASE_URL = '{}'
-
-
-class {}(BaseCrawler):
-    """
-    {}
-    """
-    urls = [BASE_URL]
-
-    def parse(self, html):
-        """
-        parse html file to get proxies
-        :return:
-        """
-        try:
-            result = json.loads(html)
-            # 根据实际API响应格式修改此处
-            # 示例响应: {}
-            proxy_list = result.get('data', [])
-            for proxy_item in proxy_list:
-                host = proxy_item.get('ip')
-                port = proxy_item.get('port')
-                if host and port:
-                    yield Proxy(host=host, port=int(port) if isinstance(port, str) else port)
-        except (json.JSONDecodeError, KeyError, ValueError) as e:
-            logger.error(f'Failed to parse proxies: {{e}}')
-            return
-
-
-if __name__ == '__main__':
-    crawler = {}()
-    for proxy in crawler.crawl():
-        print(proxy)
-'''.format(plugin_url, class_name, plugin_description, example_response, class_name)
         
         # 写入文件
         with open(plugin_file, 'w', encoding='utf-8') as f:
