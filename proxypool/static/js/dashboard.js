@@ -101,14 +101,35 @@ class Dashboard {
 
     // 加载代理列表
     async loadProxies() {
-        const tbody = document.getElementById('proxiesTableBody');
-        
-        // 显示加载状态
-        if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4"><span class="spinner"></span> 加载中...</td></tr>';
-        } else {
-            console.warn('proxiesTableBody element not found');
+        const container = document.getElementById('proxiesTableContainer');
+        if (!container) {
+            console.error('proxiesTableContainer not found');
             return;
+        }
+        
+        // 确保表格结构存在
+        let tbody = document.getElementById('proxiesTableBody');
+        if (!tbody) {
+            console.warn('proxiesTableBody not found, rebuilding table structure');
+            container.innerHTML = `
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>代理地址</th>
+                            <th style="width: 80px;">分数</th>
+                            <th style="width: 150px;">最后检查</th>
+                        </tr>
+                    </thead>
+                    <tbody id="proxiesTableBody">
+                        <tr><td colspan="4" class="text-center text-muted py-4"><span class="spinner"></span> 加载中...</td></tr>
+                    </tbody>
+                </table>
+            `;
+            tbody = document.getElementById('proxiesTableBody');
+        } else {
+            // tbody 存在，只更新内容
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4"><span class="spinner"></span> 加载中...</td></tr>';
         }
 
         try {
@@ -124,7 +145,7 @@ class Dashboard {
                 throw new Error('Invalid response format');
             }
             
-            // 重新获取 tbody，因为 DOM 可能已更改
+            // 重新获取 tbody
             const updatedTbody = document.getElementById('proxiesTableBody');
             if (updatedTbody) {
                 this.renderProxiesTable(data.proxies || []);
