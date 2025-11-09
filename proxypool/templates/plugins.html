@@ -13,13 +13,18 @@
 <div class="row fade-in">
     <div class="col-12">
         <div class="data-table-wrapper">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0">
                     <i class="bi bi-plug"></i> 当前已加载的爬虫源 ({{ plugins|length }})
                 </h5>
-                <button class="btn btn-primary btn-sm" onclick="location.reload()">
-                    <i class="bi bi-arrow-clockwise"></i> 刷新
-                </button>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#createPluginModal">
+                        <i class="bi bi-plus-circle"></i> 创建插件
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> 刷新
+                    </button>
+                </div>
             </div>
 
             {% if plugins %}
@@ -84,4 +89,116 @@
     </div>
 </div>
 
+<!-- 创建插件模态框 -->
+<div class="modal fade" id="createPluginModal" tabindex="-1" aria-labelledby="createPluginLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="createPluginLabel">
+                    <i class="bi bi-plus-circle"></i> 创建新插件
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createPluginForm">
+                    <div class="mb-3">
+                        <label for="pluginName" class="form-label">插件名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="pluginName" placeholder="例如：myproxy（不要包含特殊字符）" required>
+                        <small class="form-text text-muted">模块名称，将作为文件名（自动添加.py）</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pluginDescription" class="form-label">描述 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="pluginDescription" placeholder="例如：My proxy crawler, https://example.com" required>
+                        <small class="form-text text-muted">插件描述（会作为Docstring）</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pluginUrl" class="form-label">API URL <span class="text-danger">*</span></label>
+                        <input type="url" class="form-control" id="pluginUrl" placeholder="https://example.com/api/proxies" required>
+                        <small class="form-text text-muted">爬虫需要访问a的 API 地址</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pluginResponse" class="form-label">响应示例</label>
+                        <textarea class="form-control" id="pluginResponse" rows="4" placeholder='{"data": [{"ip": "127.0.0.1", "port": 8080}]}'></textarea>
+                        <small class="form-text text-muted">API 响应示例（JSON 格式）</small>
+                    </div>
+                    <div class="alert alert-info small">
+                        <strong>提示：</strong>插件将会被保存到 <code>proxypool/crawlers/private/</code> 文件夹中。
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" id="submitPluginBtn">创建插件</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const submitBtn = document.getElementById('submitPluginBtn');
+    const form = document.getElementById('createPluginForm');
+    
+    submitBtn.addEventListener('click', async function() {
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        const pluginName = document.getElementById('pluginName').value.trim();
+        const pluginDescription = document.getElementById('pluginDescription').value.trim();
+        const pluginUrl = document.getElementById('pluginUrl').value.trim();
+        const pluginResponse = document.getElementById('pluginResponse').value.trim();
+        
+        // 验证插件名称
+        if (!/^[a-zA-Z0-9_]+$/.test(pluginName)) {
+            notifyUtils.error('插件名称只能包含字母、数字和下划线');
+            return;
+        }
+        
+        // 提交表单
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>创建中...';
+        
+        try {
+            const response = await fetch('/api/create_plugin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: pluginName,
+                    description: pluginDescription,
+                    url: pluginUrl,
+                    response_example: pluginResponse
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                notifyUtils.success('插件创建成功！');
+                // 清空表单
+                form.reset();
+                // 关闭Modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createPluginModal'));
+                modal.hide();
+                // 1秒后刷新页面
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                notifyUtils.error(data.message || '创建失败');
+            }
+        } catch (error) {
+            console.error('错误:', error);
+            notifyUtils.error('网络错误: ' + error.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '创建插件';
+        }
+    });
+});
+</script>
 {% endblock %}

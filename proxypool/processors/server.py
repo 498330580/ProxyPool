@@ -346,6 +346,91 @@ def api_proxies():
     })
 
 
+@app.route('/api/create_plugin', methods=['POST'])
+def create_plugin():
+    """
+    创建新的爬虫插件
+    :return: JSON 创建结果
+    """
+    try:
+        data = request.get_json()  # type: ignore
+        
+        if not data:
+            return jsonify({'success': False, 'message': '请提供插件信息'}), 400
+        
+        plugin_name = data.get('name', '').strip()
+        plugin_description = data.get('description', '').strip()
+        plugin_url = data.get('url', '').strip()
+        response_example = data.get('response_example', '').strip()
+        
+        # 验证输入
+        if not plugin_name or not plugin_description or not plugin_url:
+            return jsonify({'success': False, 'message': '缺少必要参数'}), 400
+        
+        # 验证插件名称
+        if not plugin_name.replace('_', '').isalnum():
+            return jsonify({'success': False, 'message': '插件名称只能包含字母、数字和下划线'}), 400
+        
+        # 检查插件是否已存在
+        private_crawler_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawlers', 'private')
+        plugin_file = os.path.join(private_crawler_path, f'{plugin_name}.py')
+        
+        if os.path.exists(plugin_file):
+            return jsonify({'success': False, 'message': f'插件 {plugin_name} 已存在'}), 400
+        
+        # 确保 private 文件夹存在
+        os.makedirs(private_crawler_path, exist_ok=True)
+        
+        # 生成插件代码
+        plugin_code = f'''import json
+from proxypool.schemas.proxy import Proxy
+from proxypool.crawlers.base import BaseCrawler
+
+
+class {plugin_name.title().replace('_', '')}Crawler(BaseCrawler):
+    """
+    {plugin_description}
+    """
+    urls = ['{plugin_url}']
+
+    def parse(self, html):
+        """
+        parse html file to get proxies
+        :return:
+        """
+        try:
+            result = json.loads(html)
+            # 根据实际API响应格式修改此处
+            # 示例响应: {response_example if response_example else '{"data": [{"ip": "127.0.0.1", "port": 8080}]}'}
+            proxy_list = result.get('data', [])
+            for proxy_item in proxy_list:
+                host = proxy_item.get('ip')
+                port = proxy_item.get('port')
+                if host and port:
+                    yield Proxy(host=host, port=port)
+        except json.JSONDecodeError:
+            return
+
 
 if __name__ == '__main__':
-    app.run(host=API_HOST, port=API_PORT, threaded=API_THREADED)
+    crawler = {plugin_name.title().replace('_', '')}Crawler()
+    for proxy in crawler.crawl():
+        print(proxy)
+'''
+        
+        # 写入文件
+        with open(plugin_file, 'w', encoding='utf-8') as f:
+            f.write(plugin_code)
+        
+        return jsonify({
+            'success': True,
+            'message': f'插件 {plugin_name} 创建成功！',
+            'plugin_file': plugin_file
+        }), 201
+    
+    except Exception as e:
+        print(f'Error creating plugin: {e}')
+        return jsonify({'success': False, 'message': f'创建失败: {str(e)}'}), 500
+
+
+if __name__ == '__main__':    app.run(host=API_HOST, port=API_PORT, threaded=API_THREADED)
