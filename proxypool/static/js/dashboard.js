@@ -14,6 +14,8 @@ class Dashboard {
         // 动态设置API主机地址
         this.updateApiHostDisplay();
         this.bindEvents();
+        // 立即更新一次时间戳（不要需要等待数据加载）
+        this.updateTimestamp();
         this.startAutoRefresh();
         this.loadDashboardData();
     }
@@ -335,7 +337,11 @@ class Dashboard {
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
-            elem.textContent = `${hours}:${minutes}:${seconds}`;
+            const timeStr = `${hours}:${minutes}:${seconds}`;
+            elem.textContent = timeStr;
+            console.log('✅ 时间戳已更新:', timeStr);
+        } else {
+            console.warn('⚠️ lastRefresh 元素有找不到');
         }
     }
 
