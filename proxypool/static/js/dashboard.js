@@ -86,8 +86,10 @@ class Dashboard {
             console.error('加载仪表板数据失败:', error);
             notifyUtils.error('加载数据失败');
         } finally {
-            // 无论是否成功，都要更新时间戳
-            this.updateTimestamp();
+            // 无论是否成功，都要更新最后刷新时间
+            if (typeof window.updateLastRefreshTime === 'function') {
+                window.updateLastRefreshTime();
+            }
         }
     }
 
