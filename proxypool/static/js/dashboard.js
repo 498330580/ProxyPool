@@ -102,23 +102,42 @@ class Dashboard {
     // 加载代理列表
     async loadProxies() {
         const tbody = document.getElementById('proxiesTableBody');
+        
+        // 显示加载状态
         if (tbody) {
             tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4"><span class="spinner"></span> 加载中...</td></tr>';
+        } else {
+            console.warn('proxiesTableBody element not found');
+            return;
         }
 
         try {
             const offset = (this.currentPage - 1) * this.pageSize;
             const response = await fetch(`/api/proxies?limit=${this.pageSize}&offset=${offset}`);
             
-            if (!response.ok) throw new Error('加载代理列表失败');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
             const data = await response.json();
-            this.renderProxiesTable(data.proxies || []);
-            this.renderPagination(data.total || 0);
+            
+            // 验证数据
+            if (!data || !Array.isArray(data.proxies)) {
+                throw new Error('Invalid response format');
+            }
+            
+            // 重新获取 tbody，因为 DOM 可能已更改
+            const updatedTbody = document.getElementById('proxiesTableBody');
+            if (updatedTbody) {
+                this.renderProxiesTable(data.proxies || []);
+                this.renderPagination(data.total || 0);
+            } else {
+                console.error('proxiesTableBody disappeared after fetch');
+                throw new Error('表格元素丢失');
+            }
         } catch (error) {
             console.error('加载代理列表失败:', error);
-            if (tbody) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">加载数据失败，请你汀候重试</td></tr>';
+            const currentTbody = document.getElementById('proxiesTableBody');
+            if (currentTbody) {
+                currentTbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">加载数据失败，请稍候重试</td></tr>';
             }
         }
     }
@@ -126,30 +145,44 @@ class Dashboard {
     // 渲染代理表格
     renderProxiesTable(proxies) {
         const tbody = document.getElementById('proxiesTableBody');
-        if (!tbody) return;
+        if (!tbody) {
+            console.error('proxiesTableBody not found for rendering');
+            return;
+        }
 
-        if (proxies.length === 0) {
+        if (!Array.isArray(proxies) || proxies.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">暂无代理</td></tr>';
             return;
         }
 
-        tbody.innerHTML = proxies.map((proxy, index) => `
-            <tr>
-                <td>${(this.currentPage - 1) * this.pageSize + index + 1}</td>
-                <td>
-                    <code>${this.escapeHtml(proxy.proxy || 'N/A')}</code>
-                    <button class="btn btn-sm btn-link" onclick="dashboard.copyProxy('${proxy.proxy}')" title="复制">
-                        📋
-                    </button>
-                </td>
-                <td>
-                    <span class="badge" style="background-color: ${this.getScoreColor(proxy.score)}">
-                        ${proxy.score || 0}分
-                    </span>
-                </td>
-                <td>${proxy.last_checked || 'N/A'}</td>
-            </tr>
-        `).join('');
+        try {
+            tbody.innerHTML = proxies.map((proxy, index) => {
+                const rowNum = (this.currentPage - 1) * this.pageSize + index + 1;
+                const proxyStr = this.escapeHtml(proxy.proxy || 'N/A');
+                const score = proxy.score || 0;
+                const scoreColor = this.getScoreColor(score);
+                const lastChecked = this.escapeHtml(proxy.last_checked || 'N/A');
+                
+                return `<tr>
+                    <td>${rowNum}</td>
+                    <td>
+                        <code>${proxyStr}</code>
+                        <button class="btn btn-sm btn-link" onclick="dashboard.copyProxy('${proxy.proxy}')" title="复制">
+                            📋
+                        </button>
+                    </td>
+                    <td>
+                        <span class="badge" style="background-color: ${scoreColor}">
+                            ${score}分
+                        </span>
+                    </td>
+                    <td>${lastChecked}</td>
+                </tr>`;
+            }).join('');
+        } catch (error) {
+            console.error('Failed to render proxies table:', error);
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">表格渲染失败</td></tr>';
+        }
     }
 
     // 获取分数对应的颜色
