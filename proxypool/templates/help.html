@@ -126,14 +126,14 @@ def get_proxy():
     try:
         response = requests.get(proxy_url)
         if response.status_code == 200:
-            return response.text
+            return response.text.strip()
     except requests.exceptions.ConnectionError:
         return None
 
 def use_proxy(proxy, target_url):
     proxies = {
         'http': 'http://' + proxy,
-        'https': 'https://' + proxy,
+        'https': 'http://' + proxy,
     }
     try:
         response = requests.get(target_url, proxies=proxies, timeout=10)
@@ -153,11 +153,13 @@ if __name__ == '__main__':
             </div>
             <div class="tab-pane fade" id="javascript" role="tabpanel">
                 <pre><code class="language-javascript">const axios = require('axios');
+const HttpProxyAgent = require('http-proxy-agent');
+const HttpsProxyAgent = require('https-proxy-agent');
 
 async function getProxy() {
     try {
         const response = await axios.get('http://{{ api_host }}:{{ api_port }}/random');
-        return response.data;
+        return response.data.trim();
     } catch (error) {
         console.error('获取代理失败:', error);
         return null;
@@ -166,11 +168,11 @@ async function getProxy() {
 
 async function useProxy(proxy, targetUrl) {
     try {
+        const httpAgent = new HttpProxyAgent('http://' + proxy);
+        const httpsAgent = new HttpsProxyAgent('http://' + proxy);
         const response = await axios.get(targetUrl, {
-            proxy: {
-                host: proxy.split(':')[0],
-                port: parseInt(proxy.split(':')[1])
-            },
+            httpAgent: httpAgent,
+            httpsAgent: httpsAgent,
             timeout: 10000
         });
         return response.data;
@@ -189,7 +191,8 @@ getProxy().then(proxy => {
 function getProxy() {
     $proxyUrl = 'http://{{ api_host }}:{{ api_port }}/random';
     try {
-        return file_get_contents($proxyUrl);
+        $proxy = trim(file_get_contents($proxyUrl));
+        return $proxy;
     } catch (Exception $e) {
         return null;
     }
@@ -202,6 +205,11 @@ function useProxy($proxy, $targetUrl) {
             'request_fulluri' => true,
             'timeout' => 10,
         ],
+        'https' => [
+            'proxy' => 'tcp://' . $proxy,
+            'request_fulluri' => true,
+            'timeout' => 10,
+        ]
     ]);
     try {
         return file_get_contents($targetUrl, false, $context);
