@@ -101,9 +101,9 @@ class Dashboard {
 
     // 加载代理列表
     async loadProxies() {
-        const loadingContainer = document.getElementById('proxiesTableContainer');
-        if (loadingContainer) {
-            domUtils.showLoading(loadingContainer);
+        const tbody = document.getElementById('proxiesTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4"><span class="spinner"></span> 加载中...</td></tr>';
         }
 
         try {
@@ -117,8 +117,8 @@ class Dashboard {
             this.renderPagination(data.total || 0);
         } catch (error) {
             console.error('加载代理列表失败:', error);
-            if (loadingContainer) {
-                domUtils.showEmpty(loadingContainer, '加载代理列表失败，请稍后重试');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">加载数据失败，请你汀候重试</td></tr>';
             }
         }
     }
@@ -129,7 +129,7 @@ class Dashboard {
         if (!tbody) return;
 
         if (proxies.length === 0) {
-            domUtils.showEmpty(tbody.parentElement.parentElement, '暂无代理');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">暂无代理</td></tr>';
             return;
         }
 
