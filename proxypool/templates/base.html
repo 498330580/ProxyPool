@@ -51,13 +51,18 @@
 
     <footer class="footer">
         <div class="container">
-            <div class="row align-items-center">
-                <div class="col-12 col-md-8 mb-3 mb-md-0">
-                    <p><strong>ProxyPool 代理池系统</strong> &copy; {{ now('%Y') }}</p>
-                    <p class="small text-muted">一个高效、可靠的代理IP自动化管理系统</p>
-                </div>
-                <div class="col-12 col-md-4 text-md-end">
-                    <p class="small mb-0"><i class="bi bi-clock"></i> 最后刷新: <span id="lastRefresh">--:--:--</span></p>
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div></div>
+                        <p class="small mb-0"><i class="bi bi-clock"></i> 最后刷新: <span id="lastRefresh">--:--:--</span></p>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-8">
+                            <p><strong>ProxyPool 代理池系统</strong> &copy; {{ now('%Y') }}</p>
+                            <p class="small text-muted">一个高效、可靠的代理IP自动化管理系统</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
