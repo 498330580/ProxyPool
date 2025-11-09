@@ -339,9 +339,6 @@ class Dashboard {
             const seconds = String(now.getSeconds()).padStart(2, '0');
             const timeStr = `${hours}:${minutes}:${seconds}`;
             elem.textContent = timeStr;
-            console.log('✅ 时间戳已更新:', timeStr);
-        } else {
-            console.warn('⚠️ lastRefresh 元素有找不到');
         }
     }
 
