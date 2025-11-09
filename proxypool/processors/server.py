@@ -381,17 +381,25 @@ def create_plugin():
         # 确保 private 文件夹存在
         os.makedirs(private_crawler_path, exist_ok=True)
         
-        # 生成插件代码
-        plugin_code = f'''import json
+        # 生成插件类名（将下划线转成驻峰命名）
+        class_name = ''.join([word.capitalize() for word in plugin_name.split('_')]) + 'Crawler'
+        
+        # 生成插件代码——基于真实的爬虫模板
+        plugin_code = f'''import time
+import json
+from retrying import RetryError
+from loguru import logger
 from proxypool.schemas.proxy import Proxy
 from proxypool.crawlers.base import BaseCrawler
 
+BASE_URL = '{plugin_url}'
 
-class {plugin_name.title().replace('_', '')}Crawler(BaseCrawler):
+
+class {class_name}(BaseCrawler):
     """
     {plugin_description}
     """
-    urls = ['{plugin_url}']
+    urls = [BASE_URL]
 
     def parse(self, html):
         """
@@ -401,19 +409,20 @@ class {plugin_name.title().replace('_', '')}Crawler(BaseCrawler):
         try:
             result = json.loads(html)
             # 根据实际API响应格式修改此处
-            # 示例响应: {response_example if response_example else '{"data": [{"ip": "127.0.0.1", "port": 8080}]}'}
+            # 示例响应: {response_example if response_example else '{\"data\": [{\"ip\": \"127.0.0.1\", \"port\": 8080}]}'}
             proxy_list = result.get('data', [])
             for proxy_item in proxy_list:
                 host = proxy_item.get('ip')
                 port = proxy_item.get('port')
                 if host and port:
-                    yield Proxy(host=host, port=port)
-        except json.JSONDecodeError:
+                    yield Proxy(host=host, port=int(port) if isinstance(port, str) else port)
+        except (json.JSONDecodeError, KeyError, ValueError) as e:
+            logger.error(f'Failed to parse proxies: {e}')
             return
 
 
 if __name__ == '__main__':
-    crawler = {plugin_name.title().replace('_', '')}Crawler()
+    crawler = {class_name}()
     for proxy in crawler.crawl():
         print(proxy)
 '''
