@@ -163,6 +163,10 @@ def admin_dashboard():
                            and name.endswith('.py') 
                            and name != '__init__.py'])
     
+    # 获取当前访问API地址（主机名或IP + 端口）
+    api_host_display = request.host.split(':')[0]  # type: ignore
+    api_port_display = request.host.split(':')[1] if ':' in request.host else API_PORT  # type: ignore
+    
     return render_template('dashboard.html', 
                           active_page='dashboard',
                           proxy_count=conn.count(),
@@ -171,8 +175,8 @@ def admin_dashboard():
                           proxies=proxies_list,
                           redis_host=REDIS_HOST,
                           redis_port=REDIS_PORT,
-                          api_host=API_HOST,
-                          api_port=API_PORT)
+                          api_host=api_host_display,
+                          api_port=api_port_display)
 
 @app.route('/admin/help')
 def admin_help():
