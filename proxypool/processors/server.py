@@ -2,12 +2,13 @@ from flask import Flask, g, request, render_template, jsonify
 from proxypool.exceptions import PoolEmptyException
 from proxypool.storages.redis import RedisClient
 from proxypool.setting import API_HOST, API_PORT, API_THREADED, API_KEY, IS_DEV, PROXY_RAND_KEY_DEGRADED
-from proxypool.setting import REDIS_HOST, REDIS_PORT
+from proxypool.setting import REDIS_HOST, REDIS_PORT, ENABLE_GETTER, ENABLE_TESTER, CYCLE_GETTER, CYCLE_TESTER, ENABLE_SERVER
 import functools
 import datetime
 import os
 import importlib
 import pkgutil
+import json
 
 __all__ = ['app']
 
@@ -186,6 +187,94 @@ def admin_plugins():
     return render_template('plugins.html', 
                           active_page='plugins',
                           plugins=plugins)
+
+
+# API 接口路由
+@app.route('/api/stats')
+@auth_required
+def api_stats():
+    """
+    获取统计信息
+    :return: JSON 统计数据
+    """
+    conn = get_conn()
+    
+    # 获取爬虫数量
+    crawler_count = 0
+    crawler_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawlers', 'public')
+    if os.path.exists(crawler_path):
+        crawler_count = len([name for name in os.listdir(crawler_path) 
+                           if os.path.isfile(os.path.join(crawler_path, name)) 
+                           and name.endswith('.py') 
+                           and name != '__init__.py'])
+    
+    # 计算平均分
+    proxies = conn.all()
+    avg_score = 0
+    if proxies:
+        try:
+            redis_key = list(conn.db.keys('proxies:*'))[0] if conn.db.keys('proxies:*') else None
+            if redis_key:
+                scores = conn.db.zrange(redis_key, 0, -1, withscores=True)
+                if scores:
+                    avg_score = int(sum(score[1] for score in scores) / len(scores))
+        except:
+            avg_score = 0
+    
+    return jsonify({
+        'proxy_count': conn.count(),
+        'crawler_count': crawler_count,
+        'status': '运行中' if proxies else '空闲',
+        'avg_score': avg_score,
+        'getter_enabled': ENABLE_GETTER,
+        'tester_enabled': ENABLE_TESTER,
+        'server_enabled': ENABLE_SERVER,
+        'cycle_getter': CYCLE_GETTER,
+        'cycle_tester': CYCLE_TESTER
+    })
+
+
+@app.route('/api/proxies')
+@auth_required
+def api_proxies():
+    """
+    获取代理列表（分页）
+    :return: JSON 代理列表
+    """
+    conn = get_conn()
+    limit = request.args.get('limit', 20, type=int)
+    offset = request.args.get('offset', 0, type=int)
+    
+    all_proxies = conn.all()
+    total = len(all_proxies)
+    
+    # 分页处理
+    paginated_proxies = all_proxies[offset:offset + limit]
+    
+    proxies_data = []
+    for proxy in paginated_proxies:
+        proxy_str = str(proxy)
+        score = 0
+        try:
+            redis_key = list(conn.db.keys('proxies:*'))[0] if conn.db.keys('proxies:*') else None
+            if redis_key:
+                score = conn.db.zscore(redis_key, proxy_str) or 0
+                score = int(score)
+        except:
+            score = 0
+        
+        proxies_data.append({
+            'proxy': proxy_str,
+            'score': score,
+            'last_checked': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
+    
+    return jsonify({
+        'proxies': proxies_data,
+        'total': total,
+        'limit': limit,
+        'offset': offset
+    })
 
 
 
