@@ -18,14 +18,21 @@ class Dashboard {
         this.loadDashboardData();
     }
 
-    // 动态设置API主机地址
+    // 动态设置API主机地址和端口
     updateApiHostDisplay() {
         const apiHostDisplay = document.getElementById('apiHostDisplay');
+        const apiPortDisplay = document.getElementById('apiPortDisplay');
+        
         if (apiHostDisplay) {
-            // 从当前页面URL成池访问地址
-            const protocol = window.location.protocol; // http: 或 https:
-            const host = window.location.host; // 主机名：端口或不IP：端口
-            apiHostDisplay.textContent = host;
+            // 只取主机名或IP，不包含端口
+            const hostname = window.location.hostname; // 不包含端口
+            apiHostDisplay.textContent = hostname;
+        }
+        
+        if (apiPortDisplay) {
+            // 动态获取当前页面的端口
+            const port = window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
+            apiPortDisplay.textContent = port;
         }
     }
 
