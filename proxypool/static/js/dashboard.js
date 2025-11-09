@@ -11,9 +11,22 @@ class Dashboard {
     }
 
     init() {
+        // 动态设置API主机地址
+        this.updateApiHostDisplay();
         this.bindEvents();
         this.startAutoRefresh();
         this.loadDashboardData();
+    }
+
+    // 动态设置API主机地址
+    updateApiHostDisplay() {
+        const apiHostDisplay = document.getElementById('apiHostDisplay');
+        if (apiHostDisplay) {
+            // 从当前页面URL成池访问地址
+            const protocol = window.location.protocol; // http: 或 https:
+            const host = window.location.host; // 主机名：端口或不IP：端口
+            apiHostDisplay.textContent = host;
+        }
     }
 
     bindEvents() {
