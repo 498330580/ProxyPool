@@ -85,31 +85,31 @@
             </div>
             
             <div class="table-responsive" id="proxiesTableContainer">
-                <table class="table table-hover">
+                <table class="table table-hover" style="margin-bottom: 0;">
                     <thead>
                         <tr>
-                            <th style="width: 50px;">#</th>
-                            <th>代理地址</th>
-                            <th style="width: 80px;">分数</th>
-                            <th style="width: 150px;">最后检查</th>
+                            <th style="width: 40px;">#</th>
+                            <th style="width: 45%;">代理地址</th>
+                            <th style="width: 70px;">分数</th>
+                            <th style="width: 25%;">最后检查</th>
                         </tr>
                     </thead>
-                    <tbody id="proxiesTableBody">
+                    <tbody id="proxiesTableBody" style="font-size: 0.95rem;">
                         {% for proxy in proxies %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>
-                                <code>{{ proxy.proxy }}</code>
-                                <button class="btn btn-sm btn-link" onclick="dashboard.copyProxy('{{ proxy.proxy }}')" title="复制">
+                        <tr style="height: auto; padding: 0.25rem 0;">
+                            <td style="padding: 0.4rem 0.75rem; vertical-align: middle;">{{ loop.index }}</td>
+                            <td style="padding: 0.4rem 0.75rem; vertical-align: middle;">
+                                <code style="font-size: 0.85rem;">{{ proxy.proxy }}</code>
+                                <button class="btn btn-sm btn-link" onclick="dashboard.copyProxy('{{ proxy.proxy }}')" title="复制" style="padding: 0.1rem 0.3rem; margin-left: 0.3rem;">
                                     <i class="bi bi-clipboard"></i>
                                 </button>
                             </td>
-                            <td>
-                                <span class="badge" data-score="{{ proxy.score|default(0) }}">
+                            <td style="padding: 0.4rem 0.75rem; vertical-align: middle;">
+                                <span class="badge" data-score="{{ proxy.score|default(0) }}" style="font-size: 0.8rem;">
                                     {{ proxy.score|default(0) }}分
                                 </span>
                             </td>
-                            <td><small>{{ proxy.last_checked }}</small></td>
+                            <td style="padding: 0.4rem 0.75rem; vertical-align: middle;"><small style="font-size: 0.8rem;">{{ proxy.last_checked }}</small></td>
                         </tr>
                         {% else %}
                         <tr>
