@@ -3,7 +3,7 @@
 
 {% block navbar %}{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
     .hero {
         min-height: calc(100vh - 200px);
@@ -111,7 +111,9 @@
         }
     }
 </style>
+{% endblock %}
 
+{% block content %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-transparent position-absolute w-100" style="z-index: 10;">
     <div class="container">
         <a class="navbar-brand" href="/">
@@ -139,7 +141,7 @@
         <p class="hero-subtitle">高效、可靠的代理IP自动化管理系统</p>
         
         <div class="stat-box">
-            <span class="stat-number" id="proxyCount">{{ count }}</span>
+            <span class="stat-number" id="proxyCount">{{ count|default(0) }}</span>
             <span class="stat-label">个可用代理</span>
         </div>
         
@@ -154,13 +156,21 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
 <script>
     // 定时刷新代理数
     setInterval(function() {
         fetch('/count')
             .then(response => response.text())
             .then(count => {
-                document.getElementById('proxyCount').textContent = formatUtils.formatNumber(count);
+                const elem = document.getElementById('proxyCount');
+                if (elem && typeof formatUtils !== 'undefined') {
+                    elem.textContent = formatUtils.formatNumber(count);
+                } else if (elem) {
+                    elem.textContent = parseInt(count).toLocaleString('zh-CN');
+                }
             })
             .catch(error => console.log('刷新代理数失败:', error));
     }, 30000);
