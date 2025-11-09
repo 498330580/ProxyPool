@@ -18,7 +18,8 @@
         <div class="row">
             <div class="col-md-6">
                 <p><strong>基础地址:</strong></p>
-                <code class="bg-light p-2 d-block">http://{{ api_host }}:{{ api_port }}</code>
+                <code class="bg-light p-2 d-block">http://localhost:{{ api_port }}</code>
+                <p class="mt-2 mb-0"><small class="text-muted">注: 本地访问用 localhost，远程访问时请替换为实际服务器 IP 地址</small></p>
             </div>
             <div class="col-md-6">
                 <p><strong>支持开发语言:</strong></p>
@@ -122,7 +123,7 @@
                 <pre><code class="language-python">import requests
 
 def get_proxy():
-    proxy_url = 'http://{{ api_host }}:{{ api_port }}/random'
+    proxy_url = 'http://localhost:{{ api_port }}/random'  # 本地访问，远程请改为实际服务器 IP
     try:
         response = requests.get(proxy_url)
         if response.status_code == 200:
@@ -158,7 +159,7 @@ const HttpsProxyAgent = require('https-proxy-agent');
 
 async function getProxy() {
     try {
-        const response = await axios.get('http://{{ api_host }}:{{ api_port }}/random');
+        const response = await axios.get('http://localhost:{{ api_port }}/random');  // 本地访问，远程请改为实际服务器 IP
         return response.data.trim();
     } catch (error) {
         console.error('获取代理失败:', error);
@@ -189,7 +190,7 @@ getProxy().then(proxy => {
             <div class="tab-pane fade" id="php" role="tabpanel">
                 <pre><code class="language-php">&lt;?php
 function getProxy() {
-    $proxyUrl = 'http://{{ api_host }}:{{ api_port }}/random';
+    $proxyUrl = 'http://localhost:{{ api_port }}/random';  // 本地访问，远程请改为实际服务器 IP
     try {
         $proxy = trim(file_get_contents($proxyUrl));
         return $proxy;
@@ -235,7 +236,8 @@ import java.net.URL;
 public class ProxyPool {
     public static String getProxy() {
         try {
-            URL url = new URL("http://{{ api_host }}:{{ api_port }}/random");
+            // 本地访问，远程请改为实际服务器 IP
+            URL url = new URL("http://localhost:{{ api_port }}/random");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             
@@ -248,7 +250,7 @@ public class ProxyPool {
                     result.append(line);
                 }
                 in.close();
-                return result.toString();
+                return result.toString().trim();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -271,10 +273,12 @@ import (
     "fmt"
     "io/ioutil"
     "net/http"
+    "strings"
 )
 
 func getProxy() (string, error) {
-    resp, err := http.Get("http://{{ api_host }}:{{ api_port }}/random")
+    // 本地访问，远程请改为实际服务器 IP
+    resp, err := http.Get("http://localhost:{{ api_port }}/random")
     if err != nil {
         return "", err
     }
@@ -284,7 +288,7 @@ func getProxy() (string, error) {
     if err != nil {
         return "", err
     }
-    return string(body), nil
+    return strings.TrimSpace(string(body)), nil
 }
 
 func main() {
