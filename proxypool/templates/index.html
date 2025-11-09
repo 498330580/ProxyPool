@@ -3,8 +3,28 @@
 
 {% block navbar %}{% endblock %}
 
-{% block extra_css %}
+{% block content %}
 <style>
+    /* 隐藏base.html中的导航栏和页脚 */
+    nav.navbar {
+        display: none !important;
+    }
+    
+    .footer {
+        display: none !important;
+    }
+    
+    .container {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+    }
+    
+    body {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
     .hero {
         min-height: calc(100vh - 200px);
         display: flex;
@@ -14,6 +34,7 @@
         color: white;
         text-align: center;
         padding: 40px 20px;
+        margin: 0 !important;
     }
     
     .hero-content {
@@ -111,9 +132,7 @@
         }
     }
 </style>
-{% endblock %}
 
-{% block content %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-transparent position-absolute w-100" style="z-index: 10;">
     <div class="container">
         <a class="navbar-brand" href="/">
@@ -141,7 +160,7 @@
         <p class="hero-subtitle">高效、可靠的代理IP自动化管理系统</p>
         
         <div class="stat-box">
-            <span class="stat-number" id="proxyCount">{{ count|default(0) }}</span>
+            <span class="stat-number" id="proxyCount">{{ count }}</span>
             <span class="stat-label">个可用代理</span>
         </div>
         
@@ -156,21 +175,13 @@
     </div>
 </div>
 
-{% endblock %}
-
-{% block extra_js %}
 <script>
     // 定时刷新代理数
     setInterval(function() {
         fetch('/count')
             .then(response => response.text())
             .then(count => {
-                const elem = document.getElementById('proxyCount');
-                if (elem && typeof formatUtils !== 'undefined') {
-                    elem.textContent = formatUtils.formatNumber(count);
-                } else if (elem) {
-                    elem.textContent = parseInt(count).toLocaleString('zh-CN');
-                }
+                document.getElementById('proxyCount').textContent = formatUtils.formatNumber(count);
             })
             .catch(error => console.log('刷新代理数失败:', error));
     }, 30000);
