@@ -384,20 +384,23 @@ def create_plugin():
         # 生成插件类名（将下划线转成驻峰命名）
         class_name = ''.join([word.capitalize() for word in plugin_name.split('_')]) + 'Crawler'
         
+        # 预义体示例
+        example_response = response_example if response_example else '{"data": [{"ip": "127.0.0.1", "port": 8080}]}'
+        
         # 生成插件代码——基于真实的爬虫模板
-        plugin_code = f'''import time
+        plugin_code = '''import time
 import json
 from retrying import RetryError
 from loguru import logger
 from proxypool.schemas.proxy import Proxy
 from proxypool.crawlers.base import BaseCrawler
 
-BASE_URL = '{plugin_url}'
+BASE_URL = '{}'
 
 
-class {class_name}(BaseCrawler):
+class {}(BaseCrawler):
     """
-    {plugin_description}
+    {}
     """
     urls = [BASE_URL]
 
@@ -409,7 +412,7 @@ class {class_name}(BaseCrawler):
         try:
             result = json.loads(html)
             # 根据实际API响应格式修改此处
-            # 示例响应: {response_example if response_example else '{\"data\": [{\"ip\": \"127.0.0.1\", \"port\": 8080}]}'}
+            # 示例响应: {}
             proxy_list = result.get('data', [])
             for proxy_item in proxy_list:
                 host = proxy_item.get('ip')
@@ -417,15 +420,15 @@ class {class_name}(BaseCrawler):
                 if host and port:
                     yield Proxy(host=host, port=int(port) if isinstance(port, str) else port)
         except (json.JSONDecodeError, KeyError, ValueError) as e:
-            logger.error(f'Failed to parse proxies: {e}')
+            logger.error(f'Failed to parse proxies: {{e}}')
             return
 
 
 if __name__ == '__main__':
-    crawler = {class_name}()
+    crawler = {}()
     for proxy in crawler.crawl():
         print(proxy)
-'''
+'''.format(plugin_url, class_name, plugin_description, example_response, class_name)
         
         # 写入文件
         with open(plugin_file, 'w', encoding='utf-8') as f:
