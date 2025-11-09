@@ -73,18 +73,19 @@ class Dashboard {
         });
     }
 
-    // 加载仪表盘数据
+    // 加载仪表板数据
     async loadDashboardData() {
         try {
             // 加载统计数据
             await this.loadStats();
             // 加载代理列表
             await this.loadProxies();
-            // 更新时间戳
-            this.updateTimestamp();
         } catch (error) {
-            console.error('加载仪表盘数据失败:', error);
+            console.error('加载仪表板数据失败:', error);
             notifyUtils.error('加载数据失败');
+        } finally {
+            // 无论是否成功，都要更新时间戳
+            this.updateTimestamp();
         }
     }
 
