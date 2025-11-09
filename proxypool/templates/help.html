@@ -75,11 +75,11 @@
         <h5 class="card-title mb-0"><i class="bi bi-sliders"></i> 查询参数</h5>
     </div>
     <div class="card-body">
-        <p>所有 API 接口都支持代理发票指定，例如:</p>
+        <p>所有 API 接口都支持子池代理指定，例如:</p>
         <div class="alert alert-light border">
-            <p><strong>子池代理 (特定广告渠道):</strong></p>
+            <p><strong>子池代理 (特定业务需求):</strong></p>
             <code class="bg-light p-2 d-block">GET /random?key=xxx</code>
-            <p class="mt-2 mb-0"><small class="text-muted">其中 xxx 是 Redis key 的后三位</small></p>
+            <p class="mt-2 mb-0"><small class="text-muted">其中 xxx 是自定义的 Redis key 名称，用于区分不同的代理池</small></p>
         </div>
     </div>
 </div>
