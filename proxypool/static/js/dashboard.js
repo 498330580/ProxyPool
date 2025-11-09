@@ -171,20 +171,20 @@ class Dashboard {
                 const scoreColor = this.getScoreColor(score);
                 const lastChecked = this.escapeHtml(proxy.last_checked || 'N/A');
                 
-                return `<tr>
-                    <td>${rowNum}</td>
-                    <td>
-                        <code>${proxyStr}</code>
-                        <button class="btn btn-sm btn-link" onclick="dashboard.copyProxy('${proxy.proxy}')" title="复制">
-                            📋
+                return `<tr style="height: 32px;">
+                    <td style="padding: 0.25rem 0.5rem; vertical-align: middle;">${rowNum}</td>
+                    <td style="padding: 0.25rem 0.5rem; vertical-align: middle;">
+                        <code style="font-size: 0.8rem;">${proxyStr}</code>
+                        <button class="btn btn-sm btn-link" onclick="dashboard.copyProxy('${proxy.proxy}')" title="复制" style="padding: 0; margin-left: 0.2rem; line-height: 1;">
+                            <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
                         </button>
                     </td>
-                    <td>
-                        <span class="badge" style="background-color: ${scoreColor}" data-score="${score}">
+                    <td style="padding: 0.25rem 0.5rem; vertical-align: middle;">
+                        <span class="badge" style="background-color: ${scoreColor}; font-size: 0.75rem; padding: 0.25rem 0.4rem;" data-score="${score}">
                             ${score}分
                         </span>
                     </td>
-                    <td>${lastChecked}</td>
+                    <td style="padding: 0.25rem 0.5rem; vertical-align: middle;"><small style="font-size: 0.75rem;">${lastChecked}</small></td>
                 </tr>`;
             }).join('');
         } catch (error) {
