@@ -330,7 +330,11 @@ class Dashboard {
     updateTimestamp() {
         const elem = document.getElementById('lastRefresh');
         if (elem) {
-            elem.textContent = formatUtils.formatDate(new Date(), 'HH:mm:ss');
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            elem.textContent = `${hours}:${minutes}:${seconds}`;
         }
     }
 
