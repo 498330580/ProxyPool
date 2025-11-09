@@ -404,4 +404,63 @@ def create_plugin():
         return jsonify({'success': False, 'message': f'创建失败: {str(e)}'}), 500
 
 
-if __name__ == '__main__':    app.run(host=API_HOST, port=API_PORT, threaded=API_THREADED)
+@app.route('/api/upload_plugin', methods=['POST'])
+def upload_plugin():
+    """
+    上传爬虫插件文件
+    :return: JSON 上传结果
+    """
+    try:
+        data = request.get_json()  # type: ignore
+        
+        if not data:
+            return jsonify({'success': False, 'message': '请提供插件信息'}), 400
+        
+        plugin_name = data.get('name', '').strip()
+        plugin_code = data.get('code', '').strip()
+        
+        # 验证输入
+        if not plugin_name or not plugin_code:
+            return jsonify({'success': False, 'message': '缺少必要参数'}), 400
+        
+        # 验证插件名称
+        if not plugin_name.replace('_', '').isalnum():
+            return jsonify({'success': False, 'message': '插件名称只能包含字母、数字和下划线'}), 400
+        
+        # 验证代码结构
+        if 'BaseCrawler' not in plugin_code:
+            return jsonify({'success': False, 'message': '插件代码不符合规范：必须继承BaseCrawler'}), 400
+        
+        if 'def parse' not in plugin_code:
+            return jsonify({'success': False, 'message': '插件代码不符合规范：必须实现parse方法'}), 400
+        
+        if 'yield Proxy' not in plugin_code:
+            return jsonify({'success': False, 'message': '插件代码不符合规范：必须使用yield Proxy返回代理'}), 400
+        
+        # 检查插件是否已存在
+        private_crawler_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawlers', 'private')
+        plugin_file = os.path.join(private_crawler_path, f'{plugin_name}.py')
+        
+        if os.path.exists(plugin_file):
+            return jsonify({'success': False, 'message': f'插件 {plugin_name} 已存在，无法覆盖'}), 400
+        
+        # 确保 private 文件夹存在
+        os.makedirs(private_crawler_path, exist_ok=True)
+        
+        # 写入文件
+        with open(plugin_file, 'w', encoding='utf-8') as f:
+            f.write(plugin_code)
+        
+        return jsonify({
+            'success': True,
+            'message': f'插件 {plugin_name} 上传成功！',
+            'plugin_file': plugin_file
+        }), 201
+    
+    except Exception as e:
+        print(f'Error uploading plugin: {e}')
+        return jsonify({'success': False, 'message': f'上传失败: {str(e)}'}), 500
+
+
+if __name__ == '__main__':
+    app.run(host=API_HOST, port=API_PORT, threaded=API_THREADED)

@@ -21,6 +21,9 @@
                     <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#createPluginModal">
                         <i class="bi bi-plus-circle"></i> 创建插件
                     </button>
+                    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#uploadPluginModal">
+                        <i class="bi bi-upload"></i> 上传插件
+                    </button>
                     <button class="btn btn-primary btn-sm" onclick="location.reload()">
                         <i class="bi bi-arrow-clockwise"></i> 刷新
                     </button>
@@ -162,11 +165,49 @@ class MycrawlerCrawler(BaseCrawler):
     </div>
 </div>
 
+<!-- 上传插件模态框 -->
+<div class="modal fade" id="uploadPluginModal" tabindex="-1" aria-labelledby="uploadPluginLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="uploadPluginLabel">
+                    <i class="bi bi-upload"></i> 上传插件
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadPluginForm">
+                    <div class="mb-3">
+                        <label for="pluginFile" class="form-label">选择 Python 文件 <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="pluginFile" accept=".py" required>
+                        <small class="form-text text-muted d-block mt-2">仅接受 .py 文件，上传后不会覆盖已有的插件</small>
+                    </div>
+                    
+                    <div class="alert alert-warning small">
+                        <strong><i class="bi bi-exclamation-triangle"></i> 注意：</strong>
+                        <ul class="mb-0">
+                            <li>插件代码必须符合 README.md 的规范</li>
+                            <li>文件名将作为插件名称（自动憧除 .py 后缀）</li>
+                            <li>插件存保到 private 文件夹</li>
+                            <li>文件名已存在时不会上传</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-info" id="submitUploadBtn">上传插件</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // 创建插件逻辑
     const submitBtn = document.getElementById('submitPluginBtn');
     const form = document.getElementById('createPluginForm');
     
@@ -227,6 +268,67 @@ document.addEventListener('DOMContentLoaded', function() {
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '创建插件';
+        }
+    });
+    
+    // 上传插件逻辑
+    const uploadBtn = document.getElementById('submitUploadBtn');
+    const uploadForm = document.getElementById('uploadPluginForm');
+    const pluginFileInput = document.getElementById('pluginFile');
+    
+    uploadBtn.addEventListener('click', async function() {
+        if (!pluginFileInput.files || pluginFileInput.files.length === 0) {
+            notifyUtils.error('请选择一个Python文件');
+            return;
+        }
+        
+        const file = pluginFileInput.files[0];
+        
+        // 验证文件类型
+        if (!file.name.endsWith('.py')) {
+            notifyUtils.error('仅接受 .py 文件');
+            return;
+        }
+        
+        // 执行上传
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>上传中...';
+        
+        try {
+            const fileContent = await file.text();
+            const fileName = file.name.replace(/\.py$/, ''); // 离除 .py 后缀
+            
+            const response = await fetch('/api/upload_plugin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: fileName,
+                    code: fileContent
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                notifyUtils.success('插件上传成功！');
+                // 清空表单
+                uploadForm.reset();
+                // 关闭Modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('uploadPluginModal'));
+                modal.hide();
+                // 1秒后刷新页面
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                notifyUtils.error(data.message || '上传失败');
+            }
+        } catch (error) {
+            console.error('错误:', error);
+            notifyUtils.error('网络错误: ' + error.message);
+        } finally {
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = '上传插件';
         }
     });
 });
