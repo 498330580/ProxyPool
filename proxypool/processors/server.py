@@ -1,4 +1,5 @@
 from flask import Flask, g, request, render_template, jsonify
+from typing import TYPE_CHECKING
 from proxypool.exceptions import PoolEmptyException
 from proxypool.storages.redis import RedisClient
 from proxypool.setting import API_HOST, API_PORT, API_THREADED, API_KEY, IS_DEV, PROXY_RAND_KEY_DEGRADED
@@ -9,6 +10,9 @@ import os
 import importlib
 import pkgutil
 import json
+
+if TYPE_CHECKING:
+    pass  # type: ignore
 
 __all__ = ['app']
 
@@ -37,8 +41,8 @@ def auth_required(func):
         # conditional decorator, when setting API_KEY is set, otherwise just ignore this decorator
         if API_KEY == "":
             return func(*args, **kwargs)
-        if request.headers.get('API-KEY', None) is not None:
-            api_key = request.headers.get('API-KEY')
+        if request.headers.get('API-KEY', None) is not None:  # type: ignore
+            api_key = request.headers.get('API-KEY')  # type: ignore
         else:
             return {"message": "Please provide an API key in header"}, 400
         # Check if API key is correct and valid
@@ -50,14 +54,14 @@ def auth_required(func):
     return decorator
 
 
-def get_conn():
+def get_conn() -> RedisClient:  # type: ignore
     """
     get redis client object
     :return:
     """
     if not hasattr(g, 'redis'):
         g.redis = RedisClient()
-    return g.redis
+    return g.redis  # type: ignore
 
 
 @app.route('/')
@@ -79,7 +83,7 @@ def get_proxy():
     if PROXY_RAND_KEY_DEGRADED is set to True, will get a universal random proxy if no proxy found in the sub-pool
     :return: get a random proxy
     """
-    key = request.args.get('key')
+    key = request.args.get('key')  # type: ignore
     conn = get_conn()
     # return conn.random(key).string() if key else conn.random().string()
     if key:
@@ -98,7 +102,7 @@ def get_proxy_all():
     get a random proxy
     :return: get a random proxy
     """
-    key = request.args.get('key')
+    key = request.args.get('key')  # type: ignore
 
     conn = get_conn()
     proxies = conn.all(key) if key else conn.all()
@@ -118,7 +122,7 @@ def get_count():
     :return: count, int
     """
     conn = get_conn()
-    key = request.args.get('key')
+    key = request.args.get('key')  # type: ignore
     return str(conn.count(key)) if key else str(conn.count())
     
 # 管理面板路由
@@ -136,10 +140,17 @@ def admin_dashboard():
     for proxy in proxies[:20]:
         # 获取代理分数
         proxy_str = str(proxy)
-        score = conn.db.zscore(conn.db.keys('*proxy*')[0], proxy_str) if conn.db.keys('*proxy*') else 0
+        try:
+            redis_key = list(conn.db.keys('proxies:*'))[0] if conn.db.keys('proxies:*') else None  # type: ignore
+            if redis_key:
+                score = conn.db.zscore(redis_key, proxy_str) or 0  # type: ignore
+            else:
+                score = 0
+        except Exception:
+            score = 0
         proxies_list.append({
             'proxy': proxy_str,
-            'score': int(score) if score else 0,
+            'score': int(score) if isinstance(score, (int, float)) else 0,
             'last_checked': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         })
     
@@ -181,9 +192,8 @@ def admin_plugins():
     :return: 管理面板插件页面
     """
     conn = get_conn()
-    import json
-    crawlers_info = conn.db.smembers('crawlers')
-    plugins = [json.loads(info) for info in crawlers_info]
+    crawlers_info = conn.db.smembers('crawlers')  # type: ignore
+    plugins = [json.loads(info) for info in crawlers_info] if crawlers_info else []  # type: ignore
     return render_template('plugins.html', 
                           active_page='plugins',
                           plugins=plugins)
@@ -212,12 +222,13 @@ def api_stats():
     avg_score = 0
     if proxies:
         try:
-            redis_key = list(conn.db.keys('proxies:*'))[0] if conn.db.keys('proxies:*') else None
+            redis_keys = conn.db.keys('proxies:*')  # type: ignore
+            redis_key = list(redis_keys)[0] if redis_keys else None  # type: ignore
             if redis_key:
-                scores = conn.db.zrange(redis_key, 0, -1, withscores=True)
-                if scores:
+                scores = conn.db.zrange(redis_key, 0, -1, withscores=True)  # type: ignore
+                if scores and isinstance(scores, list):
                     avg_score = int(sum(score[1] for score in scores) / len(scores))
-        except:
+        except Exception:
             avg_score = 0
     
     return jsonify({
@@ -240,8 +251,8 @@ def api_proxies():
     :return: JSON 代理列表
     """
     conn = get_conn()
-    limit = request.args.get('limit', 20, type=int)
-    offset = request.args.get('offset', 0, type=int)
+    limit = request.args.get('limit', 20, type=int)  # type: ignore
+    offset = request.args.get('offset', 0, type=int)  # type: ignore
     
     all_proxies = conn.all()
     total = len(all_proxies)
@@ -254,11 +265,11 @@ def api_proxies():
         proxy_str = str(proxy)
         score = 0
         try:
-            redis_key = list(conn.db.keys('proxies:*'))[0] if conn.db.keys('proxies:*') else None
+            redis_key = list(conn.db.keys('proxies:*'))[0] if conn.db.keys('proxies:*') else None  # type: ignore
             if redis_key:
-                score = conn.db.zscore(redis_key, proxy_str) or 0
-                score = int(score)
-        except:
+                score = conn.db.zscore(redis_key, proxy_str) or 0  # type: ignore
+                score = int(score) if isinstance(score, (int, float)) else 0
+        except Exception:
             score = 0
         
         proxies_data.append({
