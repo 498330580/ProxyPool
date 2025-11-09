@@ -6,7 +6,7 @@
     <h1>
         <i class="bi bi-speedometer2"></i> 代理池状态一览
     </h1>
-    <p class="text-muted">实時监控方池状态和代理信息</p>
+    <p class="text-muted">实时监控代理池状态和代理信息</p>
 </div>
 
 <!-- 统计信息卡 -->
@@ -90,8 +90,8 @@
                         <tr>
                             <th style="width: 50px;">#</th>
                             <th>代理地址</th>
-                            <th style="width: 80px;">分數</th>
-                            <th style="width: 150px;">最后棂查</th>
+                            <th style="width: 80px;">分数</th>
+                            <th style="width: 150px;">最后检查</th>
                         </tr>
                     </thead>
                     <tbody id="proxiesTableBody">
@@ -105,7 +105,7 @@
                                 </button>
                             </td>
                             <td>
-                                <span class="badge" style="background-color: {{ proxy.score|default(0) >= 80 and '#198754' or proxy.score|default(0) >= 60 and '#0dcaf0' or proxy.score|default(0) >= 40 and '#ffc107' or '#dc3545' }}">
+                                <span class="badge" data-score="{{ proxy.score|default(0) }}">
                                     {{ proxy.score|default(0) }}分
                                 </span>
                             </td>
@@ -140,7 +140,7 @@
             <div class="card-body">
                 <div class="list-group list-group-flush">
                     <div class="list-group-item d-flex justify-content-between">
-                        <span><strong>Redis 主機</strong></span>
+                        <span><strong>Redis 主机</strong></span>
                         <code>{{ redis_host }}</code>
                     </div>
                     <div class="list-group-item d-flex justify-content-between">
@@ -148,7 +148,7 @@
                         <code>{{ redis_port }}</code>
                     </div>
                     <div class="list-group-item d-flex justify-content-between">
-                        <span><strong>API 主機</strong></span>
+                        <span><strong>API 主机</strong></span>
                         <code>{{ api_host }}</code>
                     </div>
                     <div class="list-group-item d-flex justify-content-between">
@@ -173,7 +173,7 @@
                     <li class="mb-2"><strong>获取全部：</strong><code>GET /all</code></li>
                     <li class="mb-2"><strong>获取数量：</strong><code>GET /count</code></li>
                 </ul>
-                <p class="text-muted small">更多信息请按按帮助页面</p>
+                <p class="text-muted small">更多信息请按帮助页面</p>
             </div>
         </div>
     </div>

@@ -191,7 +191,6 @@ def admin_plugins():
 
 # API 接口路由
 @app.route('/api/stats')
-@auth_required
 def api_stats():
     """
     获取统计信息
@@ -235,7 +234,6 @@ def api_stats():
 
 
 @app.route('/api/proxies')
-@auth_required
 def api_proxies():
     """
     获取代理列表（分页）

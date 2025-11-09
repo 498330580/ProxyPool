@@ -180,7 +180,7 @@ class Dashboard {
                         </button>
                     </td>
                     <td>
-                        <span class="badge" style="background-color: ${scoreColor}">
+                        <span class="badge" style="background-color: ${scoreColor}" data-score="${score}">
                             ${score}分
                         </span>
                     </td>
