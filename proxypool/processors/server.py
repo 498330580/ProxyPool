@@ -247,35 +247,53 @@ def api_stats():
 @app.route('/api/proxies')
 def api_proxies():
     """
-    获取代理列表（分页）
+    获取代理列表（按分数由高到低排序）
     :return: JSON 代理列表
     """
     conn = get_conn()
     limit = request.args.get('limit', 20, type=int)  # type: ignore
     offset = request.args.get('offset', 0, type=int)  # type: ignore
     
-    all_proxies = conn.all()
-    total = len(all_proxies)
-    
-    # 分页处理
-    paginated_proxies = all_proxies[offset:offset + limit]
-    
-    proxies_data = []
-    for proxy in paginated_proxies:
-        proxy_str = str(proxy)
-        score = 0
-        try:
-            redis_key = list(conn.db.keys('proxies:*'))[0] if conn.db.keys('proxies:*') else None  # type: ignore
-            if redis_key:
-                score = conn.db.zscore(redis_key, proxy_str) or 0  # type: ignore
-                score = int(score) if isinstance(score, (int, float)) else 0
-        except Exception:
-            score = 0
+    try:
+        redis_key = list(conn.db.keys('proxies:*'))[0] if conn.db.keys('proxies:*') else None  # type: ignore
         
-        proxies_data.append({
-            'proxy': proxy_str,
-            'score': score,
-            'last_checked': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        if redis_key:
+            # 从 Redis 按分数批量获取代理（按分数由高到低）
+            all_proxies_with_scores = conn.db.zrevrange(redis_key, 0, -1, withscores=True)  # type: ignore
+            total = len(all_proxies_with_scores) if all_proxies_with_scores else 0  # type: ignore
+            
+            # 分页处理
+            paginated_proxies = (all_proxies_with_scores or [])[offset:offset + limit]  # type: ignore
+            
+            proxies_data = []
+            for proxy_str, score in paginated_proxies:
+                proxies_data.append({
+                    'proxy': proxy_str,
+                    'score': int(score) if isinstance(score, (int, float)) else 0,
+                    'last_checked': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                })
+        else:
+            # 没有 Redis key，推退到 conn.all()
+            all_proxies = conn.all()
+            total = len(all_proxies)
+            paginated_proxies = all_proxies[offset:offset + limit]
+            
+            proxies_data = []
+            for proxy in paginated_proxies:
+                proxy_str = str(proxy)
+                proxies_data.append({
+                    'proxy': proxy_str,
+                    'score': 0,
+                    'last_checked': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                })
+    except Exception as e:
+        # 错误处理，返回空列表
+        print(f'Error fetching proxies: {e}')
+        return jsonify({
+            'proxies': [],
+            'total': 0,
+            'limit': limit,
+            'offset': offset
         })
     
     return jsonify({
