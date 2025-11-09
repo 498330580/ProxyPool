@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}代理池管理面板{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <!-- Bootstrap 5 -->
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -54,13 +56,16 @@
             <div class="row">
                 <div class="col-12">
                     <div class="row align-items-center">
-                        <div class="col-12 col-md-8">
+                        <p class="small mb-0"><i class="bi bi-clock"></i> 最后刷新: <span id="lastRefresh">--:--:--</span></p>
+                        <p class="text-center"><strong>ProxyPool 代理池系统</strong> &copy; {{ now('%Y') }}</p>
+                        <p class="small text-muted text-center">一个高效、可靠的代理IP自动化管理系统</p>
+                        <!-- <div class="col-12 col-md-8">
                             <p class="text-center"><strong>ProxyPool 代理池系统</strong> &copy; {{ now('%Y') }}</p>
                             <p class="small text-muted text-center">一个高效、可靠的代理IP自动化管理系统</p>
-                        </div>
-                        <div class="col-12 col-md-4 text-md-end">
+                        </div> -->
+                        <!-- <div class="col-12 col-md-4 text-md-end">
                             <p class="small mb-0"><i class="bi bi-clock"></i> 最后刷新: <span id="lastRefresh">--:--:--</span></p>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
