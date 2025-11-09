@@ -111,22 +111,9 @@ class Dashboard {
         let tbody = document.getElementById('proxiesTableBody');
         if (!tbody) {
             console.warn('proxiesTableBody not found, rebuilding table structure');
-            container.innerHTML = `
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">#</th>
-                            <th>代理地址</th>
-                            <th style="width: 80px;">分数</th>
-                            <th style="width: 150px;">最后检查</th>
-                        </tr>
-                    </thead>
-                    <tbody id="proxiesTableBody">
-                        <tr><td colspan="4" class="text-center text-muted py-4"><span class="spinner"></span> 加载中...</td></tr>
-                    </tbody>
-                </table>
-            `;
+            container.innerHTML = '<table class="table table-hover"><thead><tr><th style="width: 50px;">#</th><th>代理地址</th><th style="width: 80px;">分数</th><th style="width: 150px;">最后检查</th></tr></thead><tbody id="proxiesTableBody"><tr><td colspan="4" class="text-center text-muted py-4"><span class="spinner"></span> 加载中...</td></tr></tbody></table>';
             tbody = document.getElementById('proxiesTableBody');
+            console.log('Table rebuilt, tbody found:', !!tbody);
         } else {
             // tbody 存在，只更新内容
             tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4"><span class="spinner"></span> 加载中...</td></tr>';
