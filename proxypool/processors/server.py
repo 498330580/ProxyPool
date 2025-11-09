@@ -195,9 +195,47 @@ def admin_plugins():
     管理面板插件页面
     :return: 管理面板插件页面
     """
-    conn = get_conn()
-    crawlers_info = conn.db.smembers('crawlers')  # type: ignore
-    plugins = [json.loads(info) for info in crawlers_info] if crawlers_info else []  # type: ignore
+    import importlib.util
+    import inspect
+    
+    plugins = []
+    crawler_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawlers', 'public')
+    
+    if os.path.exists(crawler_path):
+        # 遍历所有爬虫文件
+        for filename in sorted(os.listdir(crawler_path)):
+            if not filename.endswith('.py') or filename == '__init__.py':
+                continue
+            
+            file_path = os.path.join(crawler_path, filename)
+            try:
+                # 动态导入爬虫模块
+                spec = importlib.util.spec_from_file_location(filename[:-3], file_path)
+                if spec is None or spec.loader is None:  # type: ignore
+                    continue
+                module = importlib.util.module_from_spec(spec)  # type: ignore
+                spec.loader.exec_module(module)  # type: ignore
+                
+                # 查找爬虫类（通常继承自 BaseCrawler）
+                for name, obj in inspect.getmembers(module):
+                    if inspect.isclass(obj) and hasattr(obj, '__module__') and obj.__module__ == module.__name__:
+                        # 获取类的 docstring
+                        docstring = inspect.getdoc(obj) or 'N/A'
+                        # 只取第一行作为描述
+                        description = docstring.split('\n')[0] if docstring else 'N/A'
+                        
+                        plugins.append({
+                            'name': name,
+                            'type': 'public',
+                            'description': description,
+                            'file': filename
+                        })
+                        break  # 每个文件只处理一个爬虫类
+            except Exception as e:
+                # 失败的爬虫文件只记录错误，不中断
+                print(f'Failed to load crawler {filename}: {e}')
+                continue
+    
     return render_template('plugins.html', 
                           active_page='plugins',
                           plugins=plugins)
