@@ -116,7 +116,7 @@
                         <small class="form-text text-muted d-block mt-2">
                             <strong>代码模板示例：</strong>
                         </small>
-                        <pre class="bg-light p-2 mt-2 small"><code>from pyquery import PyQuery as pq
+                        <pre class="bg-light p-2 mt-2 small" style="border: 1px solid #dee2e6; border-radius: 0.25rem; color: #333;"><code style="color: #333;">from pyquery import PyQuery as pq
 from proxypool.schemas.proxy import Proxy
 from proxypool.crawlers.base import BaseCrawler
 
@@ -124,6 +124,7 @@ BASE_URL = 'http://example.com/{page}.html'
 MAX_PAGE = 3
 
 class MycrawlerCrawler(BaseCrawler):
+    # 这里填写插件的描述信息（必填）
     """
     mycrawler crawler, http://example.com
     """
@@ -147,8 +148,8 @@ class MycrawlerCrawler(BaseCrawler):
                         <ul class="mb-0">
                             <li>核心是定义一个继承 <code>BaseCrawler</code> 的类</li>
                             <li>严格按照 README.md 的规范编写（包含类名、urls、parse方法的定义）</li>
-                            <li>类名待应跟文件名匹配（文件名: mycrawler → 类名: MycrawlerCrawler）</li>
-                            <li>需要使用適當的解析庫：pyquery、json、re 等</li>
+                            <li>类名需要跟文件名匹配（文件名: mycrawler → 类名: MycrawlerCrawler）</li>
+                            <li>需要使用適当的解析库：pyquery、json、re 等</li>
                         </ul>
                     </div>
                 </form>
