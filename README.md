@@ -3,7 +3,7 @@
 
 ![Deploy to GitHub Pages](https://raw.githubusercontent.com/498330580/ProxyPool/refs/heads/master/.github/workflows/badge.svg)
 ![python3](https://img.shields.io/badge/python-3.10%2B-brightgreen)
-![Docker Pulls](https://img.shields.io/docker/pulls/germey/proxypool)
+![Docker Pulls](https://img.shields.io/docker/pulls/498330580/proxypool)
 
 ## 📊 系统展示
 
@@ -75,7 +75,7 @@ cd ProxyPool
 
 安装方法自行搜索即可。
 
-🔗 官方 Docker Hub 镜像：[germey/proxypool](https://hub.docker.com/r/germey/proxypool)
+🔗 官方 Docker Hub 镜像：[498330580/proxypool](https://hub.docker.com/r/498330580/proxypool)
 
 ### 💻 常规方式
 
@@ -352,7 +352,7 @@ services:
     restart: always
   proxypool:
     build: .
-    image: "germey/proxypool"
+    image: "498330580/proxypool"
     container_name: proxypool
     ports:
       - "5555:5555"

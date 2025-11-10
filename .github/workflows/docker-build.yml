@@ -32,7 +32,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/weread-bot:${{ steps.tag_version.outputs.version }}
-            ${{ secrets.DOCKER_USERNAME }}/weread-bot:latest
+            ${{ secrets.DOCKER_USERNAME }}/proxypool:${{ steps.tag_version.outputs.version }}
+            ${{ secrets.DOCKER_USERNAME }}/proxypool:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
