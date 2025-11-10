@@ -49,13 +49,17 @@ class Getter(object):
                             member_obj is not BaseCrawler and
                             not getattr(member_obj, 'ignore', False)):
                         logger.debug(f"发现爬虫: {member_obj.__name__}")
-                        crawlers.append(member_obj())
-                        # 存储为 JSON 字符串
-                        crawler_info = {
-                            'name': member_obj.__name__,
-                            'type': crawler_type
-                        }
-                        crawler_names.append(json.dumps(crawler_info, ensure_ascii=False))
+                        try:
+                            crawlers.append(member_obj())
+                            # 存储为 JSON 字符串
+                            crawler_info = {
+                                'name': member_obj.__name__,
+                                'type': crawler_type
+                            }
+                            crawler_names.append(json.dumps(crawler_info, ensure_ascii=False))
+                        except Exception as init_error:
+                            logger.error(f"爬虫 {member_obj.__name__} 初始化失败，跳过该爬虫: {init_error}")
+                            continue
             except Exception as e:
                 logger.error(f"加载或重新加载爬虫 '{name}' 失败: {e}")
 
@@ -89,9 +93,13 @@ class Getter(object):
         crawlers = self._load_crawlers()
         for crawler in crawlers:
             logger.info(f'crawler {crawler} to get proxy')
-            for proxy in crawler.crawl():
-                self.redis.add(proxy)
-                [self.redis.add(proxy, redis_key=tester.key) for tester in self.testers]
+            try:
+                for proxy in crawler.crawl():
+                    self.redis.add(proxy)
+                    [self.redis.add(proxy, redis_key=tester.key) for tester in self.testers]
+            except Exception as e:
+                logger.error(f'爬虫 {crawler.__class__.__name__} 运行失败，跳过该爬虫: {e}')
+                continue
 
 
 if __name__ == '__main__':

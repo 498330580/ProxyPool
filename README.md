@@ -3,18 +3,25 @@
 
 ![Deploy to GitHub Pages](https://raw.githubusercontent.com/498330580/ProxyPool/refs/heads/master/.github/workflows/badge.svg)
 ![python3](https://img.shields.io/badge/python-3.10%2B-brightgreen)
-![Docker Pulls](https://img.shields.io/docker/pulls/germey/proxypool)
+![Docker Pulls](https://img.shields.io/docker/pulls/498330580/proxypool)
+![GitHub Stars](https://img.shields.io/github/stars/498330580/ProxyPool?style=flat-square&logo=github)
+![GitHub Forks](https://img.shields.io/github/forks/498330580/ProxyPool?style=flat-square&logo=github)
+![GitHub License](https://img.shields.io/github/license/498330580/ProxyPool?style=flat-square)
+![GitHub Issues](https://img.shields.io/github/issues/498330580/ProxyPool?style=flat-square&logo=github)
 
 ## 📊 系统展示
 
-### 管理页面首页
-![管理页面首页](doc/img/管理页面-首页.jpeg)
+### 首页
+![管理页面首页](https://raw.githubusercontent.com/498330580/ProxyPool/refs/heads/master/doc/img/首页.png)
 
 ### 插件管理页面
-![插件管理页面](doc/img/管理页面-插件管理.jpeg)
+![插件管理页面](https://raw.githubusercontent.com/498330580/ProxyPool/refs/heads/master/doc/img/管理面板.png)
+
+### 插件管理页面
+![插件管理页面](https://raw.githubusercontent.com/498330580/ProxyPool/refs/heads/master/doc/img/插件管理.png)
 
 ### 帮助页面
-![帮助页面](doc/img/管理页面-帮助.jpeg)
+![帮助页面](https://raw.githubusercontent.com/498330580/ProxyPool/refs/heads/master/doc/img/帮助.png)
 
 ✨ 简易高效的代理池，提供如下功能：
 
@@ -72,7 +79,7 @@ cd ProxyPool
 
 安装方法自行搜索即可。
 
-🔗 官方 Docker Hub 镜像：[germey/proxypool](https://hub.docker.com/r/germey/proxypool)
+🔗 官方 Docker Hub 镜像：[498330580/proxypool](https://hub.docker.com/r/498330580/proxypool)
 
 ### 💻 常规方式
 
@@ -349,7 +356,7 @@ services:
     restart: always
   proxypool:
     build: .
-    image: "germey/proxypool"
+    image: "498330580/proxypool"
     container_name: proxypool
     ports:
       - "5555:5555"

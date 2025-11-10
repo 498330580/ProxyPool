@@ -1,13 +1,18 @@
 from flask import Flask, g, request, render_template, jsonify
+from typing import TYPE_CHECKING
 from proxypool.exceptions import PoolEmptyException
 from proxypool.storages.redis import RedisClient
 from proxypool.setting import API_HOST, API_PORT, API_THREADED, API_KEY, IS_DEV, PROXY_RAND_KEY_DEGRADED
-from proxypool.setting import REDIS_HOST, REDIS_PORT
+from proxypool.setting import REDIS_HOST, REDIS_PORT, ENABLE_GETTER, ENABLE_TESTER, CYCLE_GETTER, CYCLE_TESTER, ENABLE_SERVER
 import functools
 import datetime
 import os
 import importlib
 import pkgutil
+import json
+
+if TYPE_CHECKING:
+    pass  # type: ignore
 
 __all__ = ['app']
 
@@ -36,8 +41,8 @@ def auth_required(func):
         # conditional decorator, when setting API_KEY is set, otherwise just ignore this decorator
         if API_KEY == "":
             return func(*args, **kwargs)
-        if request.headers.get('API-KEY', None) is not None:
-            api_key = request.headers.get('API-KEY')
+        if request.headers.get('API-KEY', None) is not None:  # type: ignore
+            api_key = request.headers.get('API-KEY')  # type: ignore
         else:
             return {"message": "Please provide an API key in header"}, 400
         # Check if API key is correct and valid
@@ -49,14 +54,14 @@ def auth_required(func):
     return decorator
 
 
-def get_conn():
+def get_conn() -> RedisClient:  # type: ignore
     """
     get redis client object
     :return:
     """
     if not hasattr(g, 'redis'):
         g.redis = RedisClient()
-    return g.redis
+    return g.redis  # type: ignore
 
 
 @app.route('/')
@@ -78,7 +83,7 @@ def get_proxy():
     if PROXY_RAND_KEY_DEGRADED is set to True, will get a universal random proxy if no proxy found in the sub-pool
     :return: get a random proxy
     """
-    key = request.args.get('key')
+    key = request.args.get('key')  # type: ignore
     conn = get_conn()
     # return conn.random(key).string() if key else conn.random().string()
     if key:
@@ -97,7 +102,7 @@ def get_proxy_all():
     get a random proxy
     :return: get a random proxy
     """
-    key = request.args.get('key')
+    key = request.args.get('key')  # type: ignore
 
     conn = get_conn()
     proxies = conn.all(key) if key else conn.all()
@@ -117,7 +122,7 @@ def get_count():
     :return: count, int
     """
     conn = get_conn()
-    key = request.args.get('key')
+    key = request.args.get('key')  # type: ignore
     return str(conn.count(key)) if key else str(conn.count())
     
 # 管理面板路由
@@ -135,10 +140,17 @@ def admin_dashboard():
     for proxy in proxies[:20]:
         # 获取代理分数
         proxy_str = str(proxy)
-        score = conn.db.zscore(conn.db.keys('*proxy*')[0], proxy_str) if conn.db.keys('*proxy*') else 0
+        try:
+            redis_key = list(conn.db.keys('proxies:*'))[0] if conn.db.keys('proxies:*') else None  # type: ignore
+            if redis_key:
+                score = conn.db.zscore(redis_key, proxy_str) or 0  # type: ignore
+            else:
+                score = 0
+        except Exception:
+            score = 0
         proxies_list.append({
             'proxy': proxy_str,
-            'score': int(score) if score else 0,
+            'score': int(score) if isinstance(score, (int, float)) else 0,
             'last_checked': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         })
     
@@ -151,6 +163,10 @@ def admin_dashboard():
                            and name.endswith('.py') 
                            and name != '__init__.py'])
     
+    # 获取当前访问API地址（主机名或IP + 端口）
+    api_host_display = request.host.split(':')[0]  # type: ignore
+    api_port_display = request.host.split(':')[1] if ':' in request.host else API_PORT  # type: ignore
+    
     return render_template('dashboard.html', 
                           active_page='dashboard',
                           proxy_count=conn.count(),
@@ -159,8 +175,8 @@ def admin_dashboard():
                           proxies=proxies_list,
                           redis_host=REDIS_HOST,
                           redis_port=REDIS_PORT,
-                          api_host=API_HOST,
-                          api_port=API_PORT)
+                          api_host=api_host_display,
+                          api_port=api_port_display)
 
 @app.route('/admin/help')
 def admin_help():
@@ -179,14 +195,271 @@ def admin_plugins():
     管理面板插件页面
     :return: 管理面板插件页面
     """
-    conn = get_conn()
-    import json
-    crawlers_info = conn.db.smembers('crawlers')
-    plugins = [json.loads(info) for info in crawlers_info]
+    import importlib.util
+    import inspect
+    
+    plugins = []
+    crawler_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawlers', 'public')
+    
+    if os.path.exists(crawler_path):
+        # 遍历所有爬虫文件
+        for filename in sorted(os.listdir(crawler_path)):
+            if not filename.endswith('.py') or filename == '__init__.py':
+                continue
+            
+            file_path = os.path.join(crawler_path, filename)
+            try:
+                # 动态导入爬虫模块
+                spec = importlib.util.spec_from_file_location(filename[:-3], file_path)
+                if spec is None or spec.loader is None:  # type: ignore
+                    continue
+                module = importlib.util.module_from_spec(spec)  # type: ignore
+                spec.loader.exec_module(module)  # type: ignore
+                
+                # 查找爬虫类（通常继承自 BaseCrawler）
+                for name, obj in inspect.getmembers(module):
+                    if inspect.isclass(obj) and hasattr(obj, '__module__') and obj.__module__ == module.__name__:
+                        # 获取类的 docstring
+                        docstring = inspect.getdoc(obj) or 'N/A'
+                        # 只取第一行作为描述
+                        description = docstring.split('\n')[0] if docstring else 'N/A'
+                        
+                        plugins.append({
+                            'name': name,
+                            'type': 'public',
+                            'description': description,
+                            'file': filename
+                        })
+                        break  # 每个文件只处理一个爬虫类
+            except Exception as e:
+                # 失败的爬虫文件只记录错误，不中断
+                print(f'Failed to load crawler {filename}: {e}')
+                continue
+    
     return render_template('plugins.html', 
                           active_page='plugins',
                           plugins=plugins)
 
+
+# API 接口路由
+@app.route('/api/stats')
+def api_stats():
+    """
+    获取统计信息
+    :return: JSON 统计数据
+    """
+    conn = get_conn()
+    
+    # 获取爬虫数量
+    crawler_count = 0
+    crawler_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawlers', 'public')
+    if os.path.exists(crawler_path):
+        crawler_count = len([name for name in os.listdir(crawler_path) 
+                           if os.path.isfile(os.path.join(crawler_path, name)) 
+                           and name.endswith('.py') 
+                           and name != '__init__.py'])
+    
+    # 计算平均分
+    proxies = conn.all()
+    avg_score = 0
+    if proxies:
+        try:
+            redis_keys = conn.db.keys('proxies:*')  # type: ignore
+            redis_key = list(redis_keys)[0] if redis_keys else None  # type: ignore
+            if redis_key:
+                scores = conn.db.zrange(redis_key, 0, -1, withscores=True)  # type: ignore
+                if scores and isinstance(scores, list):
+                    avg_score = int(sum(score[1] for score in scores) / len(scores))
+        except Exception:
+            avg_score = 0
+    
+    return jsonify({
+        'proxy_count': conn.count(),
+        'crawler_count': crawler_count,
+        'status': '运行中' if proxies else '空闲',
+        'avg_score': avg_score,
+        'getter_enabled': ENABLE_GETTER,
+        'tester_enabled': ENABLE_TESTER,
+        'server_enabled': ENABLE_SERVER,
+        'cycle_getter': CYCLE_GETTER,
+        'cycle_tester': CYCLE_TESTER
+    })
+
+
+@app.route('/api/proxies')
+def api_proxies():
+    """
+    获取代理列表（按分数由高到低排序）
+    :return: JSON 代理列表
+    """
+    conn = get_conn()
+    limit = request.args.get('limit', 20, type=int)  # type: ignore
+    offset = request.args.get('offset', 0, type=int)  # type: ignore
+    
+    try:
+        redis_key = list(conn.db.keys('proxies:*'))[0] if conn.db.keys('proxies:*') else None  # type: ignore
+        
+        if redis_key:
+            # 从 Redis 按分数批量获取代理（按分数由高到低）
+            all_proxies_with_scores = conn.db.zrevrange(redis_key, 0, -1, withscores=True)  # type: ignore
+            total = len(all_proxies_with_scores) if all_proxies_with_scores else 0  # type: ignore
+            
+            # 分页处理
+            paginated_proxies = (all_proxies_with_scores or [])[offset:offset + limit]  # type: ignore
+            
+            proxies_data = []
+            for proxy_str, score in paginated_proxies:
+                proxies_data.append({
+                    'proxy': proxy_str,
+                    'score': int(score) if isinstance(score, (int, float)) else 0,
+                    'last_checked': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                })
+        else:
+            # 没有 Redis key，推退到 conn.all()
+            all_proxies = conn.all()
+            total = len(all_proxies)
+            paginated_proxies = all_proxies[offset:offset + limit]
+            
+            proxies_data = []
+            for proxy in paginated_proxies:
+                proxy_str = str(proxy)
+                proxies_data.append({
+                    'proxy': proxy_str,
+                    'score': 0,
+                    'last_checked': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                })
+    except Exception as e:
+        # 错误处理，返回空列表
+        print(f'Error fetching proxies: {e}')
+        return jsonify({
+            'proxies': [],
+            'total': 0,
+            'limit': limit,
+            'offset': offset
+        })
+    
+    return jsonify({
+        'proxies': proxies_data,
+        'total': total,
+        'limit': limit,
+        'offset': offset
+    })
+
+
+@app.route('/api/create_plugin', methods=['POST'])
+def create_plugin():
+    """
+    创建新的爬虫插件
+    :return: JSON 创建结果
+    """
+    try:
+        data = request.get_json()  # type: ignore
+        
+        if not data:
+            return jsonify({'success': False, 'message': '请提供插件信息'}), 400
+        
+        plugin_name = data.get('name', '').strip()
+        plugin_code = data.get('code', '').strip()
+        
+        # 验证输入
+        if not plugin_name or not plugin_code:
+            return jsonify({'success': False, 'message': '缺少必要参数'}), 400
+        
+        # 验证插件名称
+        if not plugin_name.replace('_', '').isalnum():
+            return jsonify({'success': False, 'message': '插件名称只能包含字母、数字和下划线'}), 400
+        
+        # 验证代码结构
+        if 'BaseCrawler' not in plugin_code:
+            return jsonify({'success': False, 'message': '插件代码不符合规范：必须继承BaseCrawler'}), 400
+        
+        if 'def parse' not in plugin_code:
+            return jsonify({'success': False, 'message': '插件代码不符合规范：必须实现parse方法'}), 400
+        
+        if 'yield Proxy' not in plugin_code:
+            return jsonify({'success': False, 'message': '插件代码不符合规范：必须使用yield Proxy返回代理'}), 400
+        
+        # 检查插件是否已存在
+        private_crawler_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawlers', 'private')
+        plugin_file = os.path.join(private_crawler_path, f'{plugin_name}.py')
+        
+        if os.path.exists(plugin_file):
+            return jsonify({'success': False, 'message': f'插件 {plugin_name} 已存在'}), 400
+        
+        # 确保 private 文件夹存在
+        os.makedirs(private_crawler_path, exist_ok=True)
+        
+        # 写入文件
+        with open(plugin_file, 'w', encoding='utf-8') as f:
+            f.write(plugin_code)
+        
+        return jsonify({
+            'success': True,
+            'message': f'插件 {plugin_name} 创建成功！',
+            'plugin_file': plugin_file
+        }), 201
+    
+    except Exception as e:
+        print(f'Error creating plugin: {e}')
+        return jsonify({'success': False, 'message': f'创建失败: {str(e)}'}), 500
+
+
+@app.route('/api/upload_plugin', methods=['POST'])
+def upload_plugin():
+    """
+    上传爬虫插件文件
+    :return: JSON 上传结果
+    """
+    try:
+        data = request.get_json()  # type: ignore
+        
+        if not data:
+            return jsonify({'success': False, 'message': '请提供插件信息'}), 400
+        
+        plugin_name = data.get('name', '').strip()
+        plugin_code = data.get('code', '').strip()
+        
+        # 验证输入
+        if not plugin_name or not plugin_code:
+            return jsonify({'success': False, 'message': '缺少必要参数'}), 400
+        
+        # 验证插件名称
+        if not plugin_name.replace('_', '').isalnum():
+            return jsonify({'success': False, 'message': '插件名称只能包含字母、数字和下划线'}), 400
+        
+        # 验证代码结构
+        if 'BaseCrawler' not in plugin_code:
+            return jsonify({'success': False, 'message': '插件代码不符合规范：必须继承BaseCrawler'}), 400
+        
+        if 'def parse' not in plugin_code:
+            return jsonify({'success': False, 'message': '插件代码不符合规范：必须实现parse方法'}), 400
+        
+        if 'yield Proxy' not in plugin_code:
+            return jsonify({'success': False, 'message': '插件代码不符合规范：必须使用yield Proxy返回代理'}), 400
+        
+        # 检查插件是否已存在
+        private_crawler_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawlers', 'private')
+        plugin_file = os.path.join(private_crawler_path, f'{plugin_name}.py')
+        
+        if os.path.exists(plugin_file):
+            return jsonify({'success': False, 'message': f'插件 {plugin_name} 已存在，无法覆盖'}), 400
+        
+        # 确保 private 文件夹存在
+        os.makedirs(private_crawler_path, exist_ok=True)
+        
+        # 写入文件
+        with open(plugin_file, 'w', encoding='utf-8') as f:
+            f.write(plugin_code)
+        
+        return jsonify({
+            'success': True,
+            'message': f'插件 {plugin_name} 上传成功！',
+            'plugin_file': plugin_file
+        }), 201
+    
+    except Exception as e:
+        print(f'Error uploading plugin: {e}')
+        return jsonify({'success': False, 'message': f'上传失败: {str(e)}'}), 500
 
 
 if __name__ == '__main__':

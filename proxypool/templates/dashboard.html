@@ -2,95 +2,185 @@
 {% block title %}代理池管理面板 - 首页{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">代理池状态</h1>
+<div class="page-header mb-4 fade-in">
+    <h1>
+        <i class="bi bi-speedometer2"></i> 代理池状态一览
+    </h1>
+    <p class="text-muted">实时监控代理池状态和代理信息</p>
+</div>
 
-<div class="row">
-    <div class="col-md-4">
-        <div class="card">
+<!-- 统计信息卡 -->
+<div class="row mb-4 fade-in">
+    <div class="col-md-6 col-lg-3">
+        <div class="card stat-card" style="border-left: 4px solid #0d6efd;">
             <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">代理总数</h5>
+                <h6 class="card-title mb-0"><i class="bi bi-lightning-charge"></i> 代理总数</h6>
             </div>
             <div class="card-body">
-                <h2 class="display-4 text-center">{{ proxy_count }}</h2>
+                <div class="stat-number" id="proxyCount" style="font-size: 2.5rem; font-weight: bold; color: #0d6efd;">{{ proxy_count }}</div>
+                <p class="stat-label" style="color: #555; font-weight: 600;">个可用代理</p>
             </div>
         </div>
     </div>
     
-    <div class="col-md-4">
-        <div class="card">
+    <div class="col-md-6 col-lg-3">
+        <div class="card stat-card" style="border-left: 4px solid #198754;">
             <div class="card-header bg-success text-white">
-                <h5 class="card-title mb-0">爬虫数量</h5>
+                <h6 class="card-title mb-0"><i class="bi bi-broadcast"></i> 爬虫数量</h6>
             </div>
             <div class="card-body">
-                <h2 class="display-4 text-center">{{ crawler_count }}</h2>
+                <div class="stat-number" id="crawlerCount" style="font-size: 2.5rem; font-weight: bold; color: #198754;">{{ crawler_count }}</div>
+                <p class="stat-label" style="color: #555; font-weight: 600;">个数据源</p>
             </div>
         </div>
     </div>
     
-    <div class="col-md-4">
-        <div class="card">
+    <div class="col-md-6 col-lg-3">
+        <div class="card stat-card" style="border-left: 4px solid #0dcaf0;">
             <div class="card-header bg-info text-white">
-                <h5 class="card-title mb-0">系统状态</h5>
+                <h6 class="card-title mb-0"><i class="bi bi-activity"></i> 系统状态</h6>
             </div>
             <div class="card-body">
-                <h2 class="display-4 text-center">{{ status }}</h2>
+                <div class="stat-number" id="systemStatus" style="font-size: 1.8rem; font-weight: bold; color: #0dcaf0;">{{ status }}</div>
+                <p class="stat-label" style="color: #555; font-weight: 600;">
+                    <span class="status-indicator status-active"></span>
+                    正常运行
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3">
+        <div class="card stat-card" style="border-left: 4px solid #ffc107;">
+            <div class="card-header bg-warning text-white">
+                <h6 class="card-title mb-0"><i class="bi bi-graph-up"></i> 平均分数</h6>
+            </div>
+            <div class="card-body">
+                <div class="stat-number" id="avgScore" style="font-size: 2.5rem; font-weight: bold; color: #ff9800;">-- </div>
+                <p class="stat-label" style="color: #555; font-weight: 600;">质量评分</p>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row mt-4">
+<!-- 代理列表区 -->
+<div class="row fade-in">
     <div class="col-12">
+        <div class="data-table-wrapper">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-list"></i> 代理池列表
+                </h5>
+                <div class="d-flex gap-2">
+                    <div class="search-box mb-0">
+                        <input type="text" id="proxySearch" class="form-control" placeholder="搜索代理 IP..." style="width: 200px;">
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="refreshBtn">
+                        <i class="bi bi-arrow-clockwise"></i> 刷新
+                    </button>
+                    <button class="btn btn-success btn-sm" id="exportBtn">
+                        <i class="bi bi-download"></i> 导出
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-responsive" id="proxiesTableContainer">
+                <table class="table table-hover table-sm" style="margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">#</th>
+                            <th style="width: 45%;">代理地址</th>
+                            <th style="width: 70px;">分数</th>
+                            <th style="width: 25%;">最后检查</th>
+                        </tr>
+                    </thead>
+                    <tbody id="proxiesTableBody" style="font-size: 0.9rem; line-height: 1.2;">
+                        {% for proxy in proxies %}
+                        <tr style="height: 32px;">
+                            <td style="padding: 0.25rem 0.5rem; vertical-align: middle;">{{ loop.index }}</td>
+                            <td style="padding: 0.25rem 0.5rem; vertical-align: middle;">
+                                <code style="font-size: 0.8rem;">{{ proxy.proxy }}</code>
+                                <button class="btn btn-sm btn-link" onclick="dashboard.copyProxy('{{ proxy.proxy }}')" title="复制" style="padding: 0; margin-left: 0.2rem; line-height: 1;">
+                                    <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
+                                </button>
+                            </td>
+                            <td style="padding: 0.25rem 0.5rem; vertical-align: middle;">
+                                <span class="badge" data-score="{{ proxy.score|default(0) }}" style="font-size: 0.75rem; padding: 0.25rem 0.4rem;">
+                                    {{ proxy.score|default(0) }}分
+                                </span>
+                            </td>
+                            <td style="padding: 0.25rem 0.5rem; vertical-align: middle;"><small style="font-size: 0.75rem;">{{ proxy.last_checked }}</small></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                空
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 分页 -->
+            <nav id="pagination" class="mt-3"></nav>
+        </div>
+    </div>
+</div>
+
+<!-- 系统信息 -->
+<div class="row mt-4 fade-in">
+    <div class="col-lg-6">
         <div class="card">
-            <div class="card-header bg-dark text-white">
-                <h5 class="card-title mb-0">代理列表 (最新20条)</h5>
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-gear"></i> 系统配置
+                </h5>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>代理</th>
-                                <th>最后检查时间</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for proxy in proxies %}
-                            <tr>
-                                <td>{{ proxy.proxy }}</td>
-                                <td>{{ proxy.last_checked }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span><strong>Redis 主机</strong></span>
+                        <code>{{ redis_host }}</code>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span><strong>Redis 端口</strong></span>
+                        <code>{{ redis_port }}</code>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span><strong>API 主机</strong></span>
+                        <code id="apiHostDisplay">{{ api_host }}</code>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <span><strong>API 端口</strong></span>
+                        <span class="badge bg-primary" id="apiPortDisplay">{{ api_port }}</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<div class="row mt-4">
-    <div class="col-12">
+    
+    <div class="col-lg-6">
         <div class="card">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="card-title mb-0">系统信息</h5>
+            <div class="card-header bg-dark text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle"></i> 帮助信息
+                </h5>
             </div>
             <div class="card-body">
-                <ul class="list-group">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        API 端口
-                        <span class="badge bg-primary rounded-pill">{{ api_port }}</span>
-                    </li>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><strong>获取代理：</strong><code>GET /random</code></li>
+                    <li class="mb-2"><strong>获取全部：</strong><code>GET /all</code></li>
+                    <li class="mb-2"><strong>获取数量：</strong><code>GET /count</code></li>
                 </ul>
+                <p class="text-muted small">更多信息请按帮助页面</p>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    // 每30秒自动刷新页面
-    setTimeout(function() {
-        location.reload();
-    }, 30000);
-</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}
