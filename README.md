@@ -12,16 +12,16 @@
 ## 📊 系统展示
 
 ### 首页
-![管理页面首页](doc/img/首页.png)
+![管理页面首页](https://raw.githubusercontent.com/498330580/ProxyPool/refs/heads/master/doc/img/首页.png)
 
 ### 插件管理页面
-![插件管理页面](doc/img/管理面板.png)
+![插件管理页面](https://raw.githubusercontent.com/498330580/ProxyPool/refs/heads/master/doc/img/管理面板.png)
 
 ### 插件管理页面
-![插件管理页面](doc/img/插件管理.png)
+![插件管理页面](https://raw.githubusercontent.com/498330580/ProxyPool/refs/heads/master/doc/img/插件管理.png)
 
 ### 帮助页面
-![帮助页面](doc/img/帮助.png)
+![帮助页面](https://raw.githubusercontent.com/498330580/ProxyPool/refs/heads/master/doc/img/帮助.png)
 
 ✨ 简易高效的代理池，提供如下功能：
 
