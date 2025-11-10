@@ -4,6 +4,10 @@
 ![Deploy to GitHub Pages](https://raw.githubusercontent.com/498330580/ProxyPool/refs/heads/master/.github/workflows/badge.svg)
 ![python3](https://img.shields.io/badge/python-3.10%2B-brightgreen)
 ![Docker Pulls](https://img.shields.io/docker/pulls/498330580/proxypool)
+![GitHub Stars](https://img.shields.io/github/stars/498330580/ProxyPool?style=flat-square&logo=github)
+![GitHub Forks](https://img.shields.io/github/forks/498330580/ProxyPool?style=flat-square&logo=github)
+![GitHub License](https://img.shields.io/github/license/498330580/ProxyPool?style=flat-square)
+![GitHub Issues](https://img.shields.io/github/issues/498330580/ProxyPool?style=flat-square&logo=github)
 
 ## 📊 系统展示
 
