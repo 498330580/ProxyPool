@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}插件管理{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4 fade-in">
+    <h1>
+        <i class="bi bi-puzzle"></i> 插件管理
+    </h1>
+    <p class="text-muted">管理不同的爬虫插件源</p>
+</div>
+
+<div class="row fade-in">
+    <div class="col-12">
+        <div class="data-table-wrapper">
+<div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-plug"></i> 当前已加载的爬虫源 ({{ plugins|length }})
+                </h5>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#createPluginModal">
+                        <i class="bi bi-plus-circle"></i> 创建插件
+                    </button>
+                    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#uploadPluginModal">
+                        <i class="bi bi-upload"></i> 上传插件
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> 刷新
+                    </button>
+                </div>
+            </div>
+
+            {% if plugins %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>插件名称</th>
+                            <th>类型</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plugin in plugins %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                <strong>{{ plugin.name }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ plugin.type }}</span>
+                            </td>
+                            <td>
+                                <small>{{ plugin.get('description', 'N/A') }}</small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <p>暂无插件数据，请确保爬虫正常运行</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 插件说明 -->
+<div class="row mt-4 fade-in">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle"></i> 插件管理说明
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <p><strong>插件类型：</strong></p>
+                    <ul class="mb-0">
+                        <li><code>public</code> - 公共插件，会自动加载</li>
+                        <li><code>private</code> - 私人插件，需要手动部署</li>
+                    </ul>
+                </div>
+                <p>将不同的爬虫源支持不同的代理网站，直接配置不同的爬虫源即可扩展你的代理池数据来源。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 创建插件模态框 -->
+<div class="modal fade" id="createPluginModal" tabindex="-1" aria-labelledby="createPluginLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="createPluginLabel">
+                    <i class="bi bi-plus-circle"></i> 创建新插件
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createPluginForm">
+                    <div class="mb-3">
+                        <label for="pluginName" class="form-label">插件文件名 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="pluginName" placeholder="例如：mycrawler（不需要.py后缀）" required>
+                            <span class="input-group-text">.py</span>
+                        </div>
+                        <small class="form-text text-muted">模块名称，只能包含字母、数字和下划线</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="pluginCode" class="form-label">爬虫代码 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="pluginCode" rows="20" placeholder="请写入爬虫类的完整代码..." required></textarea>
+                        <small class="form-text text-muted d-block mt-2">
+                            <strong>代码模板示例：</strong>
+                        </small>
+                        <pre class="bg-light p-2 mt-2 small" style="border: 1px solid #dee2e6; border-radius: 0.25rem; color: #333;"><code style="color: #333;">from pyquery import PyQuery as pq
+from proxypool.schemas.proxy import Proxy
+from proxypool.crawlers.base import BaseCrawler
+
+BASE_URL = 'http://example.com/{page}.html'
+MAX_PAGE = 3
+
+class MycrawlerCrawler(BaseCrawler):
+    # 这里填写插件的描述信息（必填）
+    """
+    mycrawler crawler, http://example.com
+    """
+    urls = [BASE_URL.format(page=page) for page in range(1, MAX_PAGE + 1)]
+
+    def parse(self, html):
+        """
+        parse html file to get proxies
+        :return:
+        """
+        # 在这里实现解析逻辑
+        doc = pq(html)
+        for item in doc('.proxy-item').items():
+            host = item.find('.ip').text()
+            port = int(item.find('.port').text())
+            yield Proxy(host=host, port=port)</code></pre>
+                    </div>
+                    
+                    <div class="alert alert-info small">
+                        <strong>提示：</strong>
+                        <ul class="mb-0">
+                            <li>核心是定义一个继承 <code>BaseCrawler</code> 的类</li>
+                            <li>严格按照 README.md 的规范编写（包含类名、urls、parse方法的定义）</li>
+                            <li>类名需要跟文件名匹配（文件名: mycrawler → 类名: MycrawlerCrawler）</li>
+                            <li>需要使用適当的解析库：pyquery、json、re 等</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" id="submitPluginBtn">创建插件</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 上传插件模态框 -->
+<div class="modal fade" id="uploadPluginModal" tabindex="-1" aria-labelledby="uploadPluginLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="uploadPluginLabel">
+                    <i class="bi bi-upload"></i> 上传插件
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadPluginForm">
+                    <div class="mb-3">
+                        <label for="pluginFile" class="form-label">选择 Python 文件 <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="pluginFile" accept=".py" required>
+                        <small class="form-text text-muted d-block mt-2">仅接受 .py 文件，上传后不会覆盖已有的插件</small>
+                    </div>
+                    
+                    <div class="alert alert-warning small">
+                        <strong><i class="bi bi-exclamation-triangle"></i> 注意：</strong>
+                        <ul class="mb-0">
+                            <li>插件代码必须符合 README.md 的规范</li>
+                            <li>文件名将作为插件名称（自动去除 .py 后缀）</li>
+                            <li>插件存保到 private 文件夹</li>
+                            <li>文件名已存在时不会上传</li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-info" id="submitUploadBtn">上传插件</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 创建插件逻辑
+    const submitBtn = document.getElementById('submitPluginBtn');
+    const form = document.getElementById('createPluginForm');
+    
+    submitBtn.addEventListener('click', async function() {
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        const pluginName = document.getElementById('pluginName').value.trim();
+        const pluginCode = document.getElementById('pluginCode').value.trim();
+        
+        // 验证插件名称
+        if (!/^[a-zA-Z0-9_]+$/.test(pluginName)) {
+            notifyUtils.error('插件名称只能包含字母、数字和下划线');
+            return;
+        }
+        
+        // 验证插件代码是否包含必要的结构
+        if (!pluginCode.includes('BaseCrawler') || !pluginCode.includes('def parse')) {
+            notifyUtils.error('插件代码必须继承BaseCrawler且包含parse方法');
+            return;
+        }
+        
+        // 提交表单
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>创建中...';
+        
+        try {
+            const response = await fetch('/api/create_plugin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: pluginName,
+                    code: pluginCode
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                notifyUtils.success('插件创建成功！');
+                // 清空表单
+                form.reset();
+                // 关闭Modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createPluginModal'));
+                modal.hide();
+                // 1秒后刷新页面
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                notifyUtils.error(data.message || '创建失败');
+            }
+        } catch (error) {
+            console.error('错误:', error);
+            notifyUtils.error('网络错误: ' + error.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '创建插件';
+        }
+    });
+    
+    // 上传插件逻辑
+    const uploadBtn = document.getElementById('submitUploadBtn');
+    const uploadForm = document.getElementById('uploadPluginForm');
+    const pluginFileInput = document.getElementById('pluginFile');
+    
+    uploadBtn.addEventListener('click', async function() {
+        if (!pluginFileInput.files || pluginFileInput.files.length === 0) {
+            notifyUtils.error('请选择一个Python文件');
+            return;
+        }
+        
+        const file = pluginFileInput.files[0];
+        
+        // 验证文件类型
+        if (!file.name.endsWith('.py')) {
+            notifyUtils.error('仅接受 .py 文件');
+            return;
+        }
+        
+        // 执行上传
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>上传中...';
+        
+        try {
+            const fileContent = await file.text();
+            const fileName = file.name.replace(/\.py$/, ''); // 离除 .py 后缀
+            
+            const response = await fetch('/api/upload_plugin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: fileName,
+                    code: fileContent
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                notifyUtils.success('插件上传成功！');
+                // 清空表单
+                uploadForm.reset();
+                // 关闭Modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('uploadPluginModal'));
+                modal.hide();
+                // 1秒后刷新页面
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                notifyUtils.error(data.message || '上传失败');
+            }
+        } catch (error) {
+            console.error('错误:', error);
+            notifyUtils.error('网络错误: ' + error.message);
+        } finally {
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = '上传插件';
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}代理池系统{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<style>
+    /* 隐藏base.html中的导航栏和页脚 */
+    nav.navbar {
+        display: none !important;
+    }
+    
+    .footer {
+        display: none !important;
+    }
+    
+    .container {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+    }
+    
+    body {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .hero {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-align: center;
+        padding: 40px 20px;
+        margin: 0 !important;
+    }
+    
+    .hero-content {
+        max-width: 600px;
+    }
+    
+    .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        animation: slideInDown 0.6s ease-out;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.3rem;
+        margin-bottom: 30px;
+        opacity: 0.95;
+        animation: slideInUp 0.6s ease-out;
+    }
+    
+    .stat-box {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        padding: 30px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin: 20px 0;
+        animation: fadeInUp 0.8s ease-out;
+    }
+    
+    .stat-box .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        display: block;
+    }
+    
+    .stat-box .stat-label {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-top: 10px;
+    }
+    
+    .btn-lg {
+        padding: 12px 40px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .btn-outline-light:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+    }
+    
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-transparent position-absolute w-100" style="z-index: 10;">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="bi bi-diagram-3"></i> ProxyPool
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin">管理面板</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/help">使用指南</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="hero">
+    <div class="hero-content">
+        <h1>🚀 ProxyPool</h1>
+        <p class="hero-subtitle">高效、可靠的代理IP自动化管理系统</p>
+        
+        <div class="stat-box">
+            <span class="stat-number" id="proxyCount">{{ count }}</span>
+            <span class="stat-label">个可用代理</span>
+        </div>
+        
+        <div class="mt-4">
+            <a class="btn btn-light btn-lg me-2" href="/admin">
+                <i class="bi bi-speedometer2"></i> 管理面板
+            </a>
+            <a class="btn btn-outline-light btn-lg" href="/admin/help">
+                <i class="bi bi-question-circle"></i> 使用指南
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 定时刷新代理数
+    setInterval(function() {
+        fetch('/count')
+            .then(response => response.text())
+            .then(count => {
+                document.getElementById('proxyCount').textContent = formatUtils.formatNumber(count);
+            })
+            .catch(error => console.log('刷新代理数失败:', error));
+    }, 30000);
+</script>
+{% endblock %}
